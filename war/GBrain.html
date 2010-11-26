@@ -1,0 +1,129 @@
+<!doctype html>
+<!-- The DOCTYPE declaration above will set the    -->
+<!-- browser's rendering engine into               -->
+<!-- "Standards Mode". Replacing this declaration  -->
+<!-- with a "Quirks Mode" doctype may lead to some -->
+<!-- differences in layout.                        -->
+
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimam-scale=0.75, maximum-scale=1.5" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+ 
+    <style type="text/css">
+      .gwt-PushButton > img {
+        width: 20px;
+        height: 20px;
+      }
+
+      #gbrain-welcome {
+        position: absolute;
+        z-index: 1000;
+        width: 250px;
+        top: 50px;
+        left: 20px;
+        border: dashed 5px #555555;
+        color: #000000;
+        background-color: #bbbbbb;
+        padding: 10px;
+        cursor: pointer;
+      }
+      
+      #gbrain-welcome > h1 {
+        text-align: center;
+      }
+      
+      #gbrain-svgpanel {
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+      }
+
+    </style>
+    
+
+    <title>GBrain: Associative Memory by Everyone</title>
+    
+    <!--                                           -->
+    <!-- This script loads your compiled module.   -->
+    <!-- If you add any GWT meta tags, they must   -->
+    <!-- be added before this line.                -->
+    <!--                                           -->
+    <script type="text/javascript" language="javascript" src="gbrain/gbrain.nocache.js"></script>
+    <script type="text/javascript" language="javascript">
+      function gbrainSupportTouch(){
+        var targetele = document.getElementById('gbrain-svgpanel');
+        if(!targetele){
+            setTimeout(gbrainSupportTouch, 500);
+            return;
+        }
+        var handler = function (touchevent){
+          if(touchevent.changedTouches.length == 1){
+            var touch = touchevent.changedTouches[0];
+            var type = "";
+            switch(touchevent.type){
+            case "touchstart":
+              type = "mousedown";
+              break;
+            case "touchmove":
+              type="mousemove";
+              break;        
+            case "touchend":
+              type="mouseup";
+              break;
+            default:
+              return;
+            }
+
+            var event = document.createEvent("MouseEvent");
+            event.initMouseEvent(type, true, true, window, 1, touch.screenX, touch.screenY, touch.clientX, touch.clientY, false, false, false, false, 0, null);
+            touch.target.dispatchEvent(event);
+            touchevent.preventDefault();
+          }
+        };
+
+        targetele.addEventListener("touchstart", handler, true);
+        targetele.addEventListener("touchmove", handler, true);
+        targetele.addEventListener("touchend", handler, true);
+
+        //iPhone workaround
+        window.addEventListener("scroll", function(){window.onScrollForGBrain(window.pageXOffset, window.pageYOffset)});
+      }
+      gbrainSupportTouch();
+    </script>
+    
+  </head>
+
+  <!--                                           -->
+  <!-- The body can have arbitrary html, or      -->
+  <!-- you can leave the body empty if you want  -->
+  <!-- to create a completely dynamic UI.        -->
+  <!--                                           -->
+  <body>
+
+    <!-- OPTIONAL: include this if you want history support -->
+    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+    
+    <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
+    <noscript>
+      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+        Your web browser must have JavaScript enabled
+        in order for this application to display correctly.
+      </div>
+    </noscript>
+    
+    <div id="gbrain-welcome" onclick="this.style.display='none';">
+<h1>Welcome</h1>
+This is an experimental system to make a global brain.<br/>
+Feel free to make any modification.<br/> 
+What you can do:<br/>
+1) Create a new text<br/>
+2) Link with an existing text<br/>
+3) Place texts in good positions<br/>
+    </div>
+    
+  </body>
+</html>
