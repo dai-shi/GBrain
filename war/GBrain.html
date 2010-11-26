@@ -9,14 +9,14 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimam-scale=0.75, maximum-scale=1.5" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimam-scale=1.0, maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
  
     <style type="text/css">
       .gwt-PushButton > img {
-        width: 20px;
-        height: 20px;
+        width: 28px;
+        height: 28px;
       }
 
       #gbrain-welcome {
@@ -88,9 +88,6 @@
         targetele.addEventListener("touchstart", handler, true);
         targetele.addEventListener("touchmove", handler, true);
         targetele.addEventListener("touchend", handler, true);
-
-        //iPhone workaround
-        window.addEventListener("scroll", function(){window.onScrollForGBrain(window.pageXOffset, window.pageYOffset)});
       }
       gbrainSupportTouch();
     </script>

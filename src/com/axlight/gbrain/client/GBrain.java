@@ -15,7 +15,7 @@
 package com.axlight.gbrain.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.user.client.Window;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 /**
@@ -23,31 +23,13 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
  */
 public class GBrain implements EntryPoint {
 
-	public static boolean isIPhone = false;
-	public static MainPane mainPane = null;
-	
-    public static void onScrollForGBrain(int scrollLeft, int scrollTop){
-    	if(mainPane != null){
-    		mainPane.onWindowScrollForGBrain(scrollLeft, scrollTop);
-    	}
-    }
-            
-    public static native void exportStaticMethod() /*-{
-      $wnd.onScrollForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onScrollForGBrain(II));
-    }-*/;
-
-	
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		String userAgent = Window.Navigator.getUserAgent();
-		if(userAgent.indexOf("iPhone") >= 0){
-			isIPhone = true;
-		}
-		mainPane = new MainPane();
+		MainPane mainPane = new MainPane();
 		RootLayoutPanel.get().add(mainPane);
-		exportStaticMethod();
+		RootLayoutPanel.get().getElement().getStyle().setBottom(-MainPane.IPHONE_EXTRA_HEIGHT, Unit.PX);
 	}	
 
 }

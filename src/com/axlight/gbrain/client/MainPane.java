@@ -27,10 +27,6 @@ import com.axlight.gbrain.shared.FieldVerifier;
 import com.axlight.gbrain.shared.NeuronData;
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -57,7 +53,6 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -74,10 +69,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private final DrawingArea drawArea;
 	private final Coordinate coordinate;
 
+	public static final int BUTTON_SIZE = 28;
 	public static final int IPHONE_EXTRA_HEIGHT = 60;
 	
-	private int screenWidth;
-	private int screenHeight;
 	private int viewX;
 	private int viewY;
 
@@ -101,7 +95,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				new CreateDialog();
 			}
 		});
-		createButton.setPixelSize(20, 20);
+		createButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		createButton.setTitle("Create a new text");
 
 		PushButton deleteButton = new PushButton(new Image(
@@ -141,7 +135,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				});
 			}
 		});
-		deleteButton.setPixelSize(20, 20);
+		deleteButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		deleteButton.setTitle("Delete text");
 
 		PushButton openButton = new PushButton(new Image(
@@ -154,7 +148,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				refreshChildNeurons(selectNode.getId());
 			}
 		});
-		openButton.setPixelSize(20, 20);
+		openButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		openButton.setTitle("Open children");
 
 		PushButton closeButton = new PushButton(new Image(
@@ -167,7 +161,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				removeChildNodes(selectNode);
 			}
 		});
-		closeButton.setPixelSize(20, 20);
+		closeButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		closeButton.setTitle("Close children");
 
 		PushButton jumpButton = new PushButton(new Image(
@@ -180,7 +174,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				jumpToUrl(selectNode);
 			}
 		});
-		jumpButton.setPixelSize(20, 20);
+		jumpButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		jumpButton.setTitle("Jump to URL");
 
 		buttonPanel = new HorizontalPanel();
@@ -190,26 +184,16 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		buttonPanel.add(closeButton);
 		buttonPanel.add(jumpButton);
 
-		screenWidth = Window.getClientWidth();
-		screenHeight = Window.getClientHeight();
+		int screenWidth = Window.getClientWidth();
+		int screenHeight = Window.getClientHeight() + IPHONE_EXTRA_HEIGHT;
 		drawArea = new DrawingArea(screenWidth, screenHeight);
 		drawArea.getElement().setId("gbrain-svgpanel");
 		this.add(drawArea, 0, 0);
 		this.add(buttonPanel, 0, 0);
-		if(GBrain.isIPhone){
-			RootLayoutPanel.get().getElement().getStyle().setRight(-screenWidth*2, Unit.PX);
-			RootLayoutPanel.get().getElement().getStyle().setBottom(-screenHeight*2-MainPane.IPHONE_EXTRA_HEIGHT, Unit.PX);
-			drawArea.setWidth(screenWidth*3);
-			drawArea.setHeight(screenHeight*3 + IPHONE_EXTRA_HEIGHT);
-			Window.scrollTo(screenWidth, screenHeight);
-			this.setWidgetPosition(buttonPanel, screenWidth, screenHeight);
-			Element welcome = Document.get().getElementById("gbrain-welcome");
-			welcome.getStyle().setLeft(screenWidth + 20, Style.Unit.PX);
-			welcome.getStyle().setTop(screenHeight + 50, Style.Unit.PX);
-		}
 		viewX = -drawArea.getWidth() / 2;
 		viewY = -drawArea.getHeight() / 2;
 		coordinate = new Coordinate(drawArea, viewX, viewY);
+		Window.scrollTo(0, 1);
 		
 		supportDragAndDrop();
 		new LineAnimation().start();
@@ -217,32 +201,14 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public void onResize() {
-		screenWidth = Window.getClientWidth();
-		screenHeight = Window.getClientHeight();
-		if(GBrain.isIPhone){
-			RootLayoutPanel.get().getElement().getStyle().setRight(-screenWidth*2, Unit.PX);
-			RootLayoutPanel.get().getElement().getStyle().setBottom(-screenHeight*2-MainPane.IPHONE_EXTRA_HEIGHT, Unit.PX);
-			drawArea.setWidth(screenWidth*3);
-			drawArea.setHeight(screenHeight*3 + IPHONE_EXTRA_HEIGHT);
-			Window.scrollTo(screenWidth, screenHeight);
-			this.setWidgetPosition(buttonPanel, screenWidth, screenHeight);
-		}else{
-			drawArea.setWidth(screenWidth);
-			drawArea.setHeight(screenHeight);
-		}
+		int screenWidth = Window.getClientWidth();
+		int screenHeight = Window.getClientHeight() + IPHONE_EXTRA_HEIGHT;
+		drawArea.setWidth(screenWidth);
+		drawArea.setHeight(screenHeight);
 		coordinate.updateView(viewX, viewY);
+		Window.scrollTo(0, 1);
 	}
 		
-	public void onWindowScrollForGBrain(int scrollLeft, int scrollTop){
-		if(GBrain.isIPhone && (scrollLeft != 0 || scrollTop != 0)){
-			viewX -= screenWidth - scrollLeft;
-			viewY -= screenHeight - scrollTop;
-			nodeManager.updateView(viewX, viewY);
-			coordinate.updateView(viewX, viewY);
-			Window.scrollTo(screenWidth, screenHeight);
-		}
-	}
-
 	private class AlertDialog extends DialogBox {
 		public AlertDialog(String message) {
 			setModal(true);
@@ -264,8 +230,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				}
 			});
 
-			setPopupPosition(10, 30);
-			show();
+			center();
 		}
 	}
 
@@ -302,8 +267,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				}
 			});
 
-			setPopupPosition(10, 30);
-			show();
+			center();
 		}
 	}
 
@@ -362,8 +326,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				}
 			});
 
-			setPopupPosition(10, 30);
-			show();
+			center();
 		}
 
 		private void handleEnter() {
@@ -812,8 +775,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO application
-	// TODO open source: git
 	// TODO (Low) Re-position child nodes
 	// TODO (Low) slide like iphone (speed detection)
 	// TODO (Low) auto-scroll to a certain position (to a child node?)
