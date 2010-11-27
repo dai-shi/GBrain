@@ -71,7 +71,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	public static final int BUTTON_SIZE = 28;
 	public static final int IPHONE_EXTRA_HEIGHT = 60;
-	
+
 	private int viewX;
 	private int viewY;
 
@@ -194,7 +194,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		viewY = -drawArea.getHeight() / 2;
 		coordinate = new Coordinate(drawArea, viewX, viewY);
 		Window.scrollTo(0, 1);
-		
+
 		supportDragAndDrop();
 		new LineAnimation().start();
 		refreshTopNeurons();
@@ -208,7 +208,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		coordinate.updateView(viewX, viewY);
 		Window.scrollTo(0, 1);
 	}
-		
+
 	private class AlertDialog extends DialogBox {
 		public AlertDialog(String message) {
 			setModal(true);
@@ -462,6 +462,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				int eventX = event.getX();
 				int eventY = event.getY();
 				long now = System.currentTimeMillis();
+				Window.alert("debug=(" + lastMouseDownX + "," + lastMouseDownY
+						+ "),(" + eventX + "," + eventY + "),"
+						+ (now - lastMouseDownTime));
 				if (now < lastMouseDownTime + CLICK_TIMEOUT
 						&& Math.abs(eventX - lastMouseDownX) < CLICK_ALLOWANCE
 						&& Math.abs(eventY - lastMouseDownY) < CLICK_ALLOWANCE) {
@@ -738,15 +741,15 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				animationIte = null;
 				line = null;
 			}
-			if(line == null){
+			if (line == null) {
 				run(500);
-			}else{
+			} else {
 				run(3000);
 			}
 		}
 
 		protected void onStart() {
-			if (line != null) {
+			if (line != null && dragNode == null && sliding == false) {
 				animationCircle.setX(line.getX1());
 				animationCircle.setY(line.getY1());
 				animationCircle.setVisible(true);
@@ -755,14 +758,16 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 		protected void onUpdate(double progress) {
 			if (line != null) {
-				if(line.getParent() == null){
-					animationCircle.setVisible(false);	
+				if (line.getParent() == null || dragNode != null || sliding) {
+					animationCircle.setVisible(false);
+					line = null;
+				} else {
+					progress = interpolate(progress);
+					animationCircle.setX((int) (line.getX1() + progress
+							* (line.getX2() - line.getX1())));
+					animationCircle.setY((int) (line.getY1() + progress
+							* (line.getY2() - line.getY1())));
 				}
-				progress = interpolate(progress);
-				animationCircle.setX((int) (line.getX1() + progress
-						* (line.getX2() - line.getX1())));
-				animationCircle.setY((int) (line.getY1() + progress
-						* (line.getY2() - line.getY1())));
 			}
 		}
 
@@ -775,6 +780,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
+	// TODO (High) stop animation when dragging/sliding
 	// TODO (Low) Re-position child nodes
 	// TODO (Low) slide like iphone (speed detection)
 	// TODO (Low) auto-scroll to a certain position (to a child node?)
