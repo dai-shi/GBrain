@@ -212,7 +212,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private class AlertDialog extends DialogBox {
 		public AlertDialog(String message) {
 			setModal(true);
-			//setGlassEnabled(true);
+			// setGlassEnabled(true);
 			setText("Alert");
 
 			Label label = new Label(message);
@@ -237,7 +237,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private class ConfirmDialog extends DialogBox {
 		public ConfirmDialog(String message, final ClickHandler okHandler) {
 			setModal(true);
-			//setGlassEnabled(true);
+			// setGlassEnabled(true);
 			setText("Confirm");
 
 			Label label = new Label(message);
@@ -278,7 +278,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 		public CreateDialog() {
 			setModal(true);
-			//setGlassEnabled(true);
+			// setGlassEnabled(true);
 			setText("Create New");
 
 			Label label = new Label("Enter Text (4~64 chars)");
@@ -475,6 +475,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 						}
 						lastMouseDownTime = 0;
 					} else {
+						Window.alert("DEBUG: click position (" + (lastMouseDownX+viewX)
+								+ "," + (lastMouseDownY+viewY) + ")");
 						selectNodeByPosition(lastMouseDownX, lastMouseDownY);
 					}
 					dragNode = null;
@@ -702,7 +704,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				}
 			}
 		}
-		Window.alert("DEBUG: no node found out of "+drawArea.getVectorObjectCount()+" objects.");
 		return null;
 	}
 

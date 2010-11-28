@@ -71,7 +71,8 @@ public class NeuronNode extends Group {
 		this.viewX = viewX;
 		this.viewY = viewY;
 
-		text = new Text(0, 0, content + " (" + children + ")");
+		text = new Text(0, 0, "");
+		updateText();
 		text.setFillColor("black");
 		text.setStrokeWidth(0);
 		text.setFontFamily("Arial");
@@ -111,17 +112,21 @@ public class NeuronNode extends Group {
 
 	public void setChildren(int children) {
 		this.children = children;
-		text.setText(content + " (" + children + ")");
+		updateText();
+	}
+	
+	private void updateText(){
+		text.setText("("+posX+","+posY+") " +content + " [" + children + "]");
 	}
 
 	public void increaseChildren() {
 		children++;
-		text.setText(content + " (" + children + ")");
+		updateText();
 	}
 
 	public void decreaseChildren() {
 		children--;
-		text.setText(content + " (" + children + ")");
+		updateText();
 	}
 
 	public void bringToFront() {
@@ -174,11 +179,18 @@ public class NeuronNode extends Group {
 	}
 
 	public void setPosition(int posX, int posY){
+		boolean positionUpdated = false;
+		if(this.posX != posX || this.posY != posY){
+			positionUpdated = true;
+		}
 		this.posX = posX;
+		this.posY = posY;
+		if(positionUpdated){
+			updateText();
+		}
 		int x = this.posX - viewX;
 		text.setX(x - textWidth / 2);
 		rect.setX(x - textWidth / 2 - TEXT_MARGIN_LEFT);
-		this.posY = posY;
 		int y = this.posY - viewY;
 		text.setY(y + textHeight / 2);
 		rect.setY(y - textHeight / 2 - TEXT_MARGIN_TOP);
