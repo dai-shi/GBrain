@@ -51,12 +51,12 @@ public class NeuronNode extends Group {
 	private int viewX;
 	private int viewY;
 
-	private Text text;
-	private int textWidth;
-	private int textHeight;
-	private Rectangle rect;
+	private final Text text;
+	private final int textWidth;
+	private final int textHeight;
+	private final Rectangle rect;
 	private Line parentLine = null;
-	private Map<Long, Line> childLines = new HashMap<Long, Line>();
+	private final Map<Long, Line> childLines = new HashMap<Long, Line>();
 
 	public NeuronNode(NeuronData nd, int viewX, int viewY) {
 		id = nd.getId();

@@ -16,6 +16,7 @@ package com.axlight.gbrain.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 /**
@@ -29,7 +30,12 @@ public class GBrain implements EntryPoint {
 	public void onModuleLoad() {
 		MainPane mainPane = new MainPane();
 		RootLayoutPanel.get().add(mainPane);
-		RootLayoutPanel.get().getElement().getStyle().setBottom(-MainPane.IPHONE_EXTRA_HEIGHT, Unit.PX);
-	}	
+
+		String userAgent = Window.Navigator.getUserAgent();
+		if (userAgent.indexOf("iPhone") >= 0) {
+			RootLayoutPanel.get().getElement().getStyle().setBottom(
+					-MainPane.IPHONE_EXTRA_HEIGHT, Unit.PX);
+		}
+	}
 
 }

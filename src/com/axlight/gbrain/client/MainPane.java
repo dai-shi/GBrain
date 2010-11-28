@@ -212,7 +212,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private class AlertDialog extends DialogBox {
 		public AlertDialog(String message) {
 			setModal(true);
-			setGlassEnabled(true);
+			//setGlassEnabled(true);
 			setText("Alert");
 
 			Label label = new Label(message);
@@ -237,7 +237,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private class ConfirmDialog extends DialogBox {
 		public ConfirmDialog(String message, final ClickHandler okHandler) {
 			setModal(true);
-			setGlassEnabled(true);
+			//setGlassEnabled(true);
 			setText("Confirm");
 
 			Label label = new Label(message);
@@ -278,7 +278,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 		public CreateDialog() {
 			setModal(true);
-			setGlassEnabled(true);
+			//setGlassEnabled(true);
 			setText("Create New");
 
 			Label label = new Label("Enter Text (4~64 chars)");
@@ -462,9 +462,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				int eventX = event.getX();
 				int eventY = event.getY();
 				long now = System.currentTimeMillis();
-				Window.alert("debug=(" + lastMouseDownX + "," + lastMouseDownY
-						+ "),(" + eventX + "," + eventY + "),"
-						+ (now - lastMouseDownTime));
 				if (now < lastMouseDownTime + CLICK_TIMEOUT
 						&& Math.abs(eventX - lastMouseDownX) < CLICK_ALLOWANCE
 						&& Math.abs(eventY - lastMouseDownY) < CLICK_ALLOWANCE) {
@@ -705,6 +702,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				}
 			}
 		}
+		Window.alert("DEBUG: no node found out of "+drawArea.getVectorObjectCount()+" objects.");
 		return null;
 	}
 
@@ -780,10 +778,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (High) stop animation when dragging/sliding
-	// TODO (Low) Re-position child nodes
+	// TODO (High) concept -> redesign
+	// TODO (Middle) open all children
+	// TODO (Middle) Re-position child nodes
 	// TODO (Low) slide like iphone (speed detection)
 	// TODO (Low) auto-scroll to a certain position (to a child node?)
+	// TODO (Low) search text and auto-scroll
 	// TODO (Low) textbox focus in dialogs, textbox enter to OK
 	// TODO (App) Land
 	// TODO (App) from twitter
