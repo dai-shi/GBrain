@@ -27,6 +27,7 @@ import com.axlight.gbrain.shared.FieldVerifier;
 import com.axlight.gbrain.shared.NeuronData;
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -53,6 +54,7 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -69,11 +71,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private final DrawingArea drawArea;
 	private final Coordinate coordinate;
 
-	public static final int BUTTON_SIZE = 28;
-	public static final int IPHONE_EXTRA_HEIGHT = 60;
+	private static final int BUTTON_SIZE = 28;
+	private static final int IPHONE_EXTRA_HEIGHT = 60;
 
 	private int viewX;
 	private int viewY;
+
+	private SlideAnimation slideAnimation = null;
 
 	public MainPane() {
 		nodeManager = new NodeManager();
@@ -89,8 +93,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			}
 		};
 
-		PushButton createButton = new PushButton(new Image(
-				"images/create_button.png"), new ClickHandler() {
+		Image image;
+		if (GBrain.isIPhone) {
+			image = new Image("images/create_button.svg");
+		} else {
+			image = new Image("images/create_button.png");
+		}
+		PushButton createButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				new CreateDialog();
 			}
@@ -98,8 +107,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		createButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		createButton.setTitle("Create a new text");
 
-		PushButton deleteButton = new PushButton(new Image(
-				"images/delete_button.png"), new ClickHandler() {
+		if (GBrain.isIPhone) {
+			image = new Image("images/delete_button.svg");
+		} else {
+			image = new Image("images/delete_button.png");
+		}
+		PushButton deleteButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
 					new AlertDialog("Nothing is selected.");
@@ -138,8 +151,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		deleteButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		deleteButton.setTitle("Delete text");
 
-		PushButton openButton = new PushButton(new Image(
-				"images/open_button.png"), new ClickHandler() {
+		if (GBrain.isIPhone) {
+			image = new Image("images/open_button.svg");
+		} else {
+			image = new Image("images/open_button.png");
+		}
+		PushButton openButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
 					new AlertDialog("Nothing is selected.");
@@ -151,8 +168,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		openButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		openButton.setTitle("Open children");
 
-		PushButton closeButton = new PushButton(new Image(
-				"images/close_button.png"), new ClickHandler() {
+		if (GBrain.isIPhone) {
+			image = new Image("images/close_button.svg");
+		} else {
+			image = new Image("images/close_button.png");
+		}
+		PushButton closeButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
 					new AlertDialog("Nothing is selected.");
@@ -164,8 +185,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		closeButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		closeButton.setTitle("Close children");
 
-		PushButton jumpButton = new PushButton(new Image(
-				"images/jump_button.png"), new ClickHandler() {
+		if (GBrain.isIPhone) {
+			image = new Image("images/jump_button.svg");
+		} else {
+			image = new Image("images/jump_button.png");
+		}
+		PushButton jumpButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
 					new AlertDialog("Nothing is selected.");
@@ -184,6 +209,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		buttonPanel.add(closeButton);
 		buttonPanel.add(jumpButton);
 
+		if (GBrain.isIPhone) {
+			RootLayoutPanel.get().getElement().getStyle().setBottom(
+					-IPHONE_EXTRA_HEIGHT, Unit.PX);
+		}
 		int screenWidth = Window.getClientWidth();
 		int screenHeight = Window.getClientHeight() + IPHONE_EXTRA_HEIGHT;
 		drawArea = new DrawingArea(screenWidth, screenHeight);
@@ -193,10 +222,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		viewX = -drawArea.getWidth() / 2;
 		viewY = -drawArea.getHeight() / 2;
 		coordinate = new Coordinate(drawArea, viewX, viewY);
-		Window.scrollTo(0, 1);
+		Window.scrollTo(0, 0);
 
 		supportDragAndDrop();
-		new LineAnimation().start();
+		new LineAnimation();
 		refreshTopNeurons();
 	}
 
@@ -206,7 +235,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		drawArea.setWidth(screenWidth);
 		drawArea.setHeight(screenHeight);
 		coordinate.updateView(viewX, viewY);
-		Window.scrollTo(0, 1);
+		Window.scrollTo(0, 0);
 	}
 
 	private class AlertDialog extends DialogBox {
@@ -428,11 +457,17 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private int slideStartX = 0;
 	private int slideStartY = 0;
 	private long slideStartTime = 0;
-	private static double MAX_SLIDE_SPEED = 5.0;
+	private double lastSlideSpeedX = 0;
+	private double lastSlideSpeedY = 0;
+	private static double MAX_SLIDE_SPEED = 3.0;
 
 	private void supportDragAndDrop() {
 		drawArea.addMouseDownHandler(new MouseDownHandler() {
 			public void onMouseDown(MouseDownEvent event) {
+				if (slideAnimation != null) {
+					slideAnimation.cancel();
+					slideAnimation = null;
+				}
 				long now = System.currentTimeMillis();
 				int eventX = event.getX();
 				int eventY = event.getY();
@@ -447,6 +482,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 					slideStartX = eventX;
 					slideStartY = eventY;
 					slideStartTime = now;
+					lastSlideSpeedX = 0;
+					lastSlideSpeedY = 0;
 				}
 				secondLastMouseDownTime = lastMouseDownTime;
 				secondLastMouseDownX = lastMouseDownX;
@@ -458,7 +495,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		});
 		drawArea.addMouseUpHandler(new MouseUpHandler() {
 			public void onMouseUp(MouseUpEvent event) {
-				sliding = false;
 				int eventX = event.getX();
 				int eventY = event.getY();
 				long now = System.currentTimeMillis();
@@ -475,11 +511,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 						}
 						lastMouseDownTime = 0;
 					} else {
-						Window.alert("DEBUG: click position (" + (lastMouseDownX+viewX)
-								+ "," + (lastMouseDownY+viewY) + ")");
 						selectNodeByPosition(lastMouseDownX, lastMouseDownY);
 					}
-					dragNode = null;
 				} else if (dragNode != null) {
 					if (mouseOverNode != null) {
 						long newparent = mouseOverNode.getId();
@@ -497,8 +530,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 							updatePositionNodeAndChildNodes(dragNode);
 						}
 					}
-					dragNode = null;
 				}
+				if (sliding) {
+					slideAnimation = new SlideAnimation(lastSlideSpeedX,
+							lastSlideSpeedY);
+				}
+				sliding = false;
+				dragNode = null;
 			}
 		});
 		drawArea.addMouseMoveHandler(new MouseMoveHandler() {
@@ -512,11 +550,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 					long now = System.currentTimeMillis();
 					int eventX = event.getX();
 					int eventY = event.getY();
-					float speedX = (float) Math.abs(eventX - slideStartX)
-							/ (float) (now - slideStartTime);
-					float speedY = (float) Math.abs(eventY - slideStartY)
-							/ (float) (now - slideStartTime);
-					if (speedX < MAX_SLIDE_SPEED && speedY < MAX_SLIDE_SPEED) {
+					lastSlideSpeedX = (double) (eventX - slideStartX)
+							/ (double) (now - slideStartTime);
+					lastSlideSpeedY = (double) (eventY - slideStartY)
+							/ (double) (now - slideStartTime);
+					if (Math.abs(lastSlideSpeedX) < MAX_SLIDE_SPEED
+							&& Math.abs(lastSlideSpeedY) < MAX_SLIDE_SPEED) {
 						viewX -= eventX - slideStartX;
 						viewY -= eventY - slideStartY;
 						nodeManager.updateView(viewX, viewY);
@@ -723,9 +762,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 						.getVectorObjectCount()
 						- nodeManager.count());
 			}
-		}
-
-		public void start() {
 			try {
 				if (animationIte == null || !animationIte.hasNext()) {
 					animationIte = nodeManager.getAllNodes().iterator();
@@ -774,15 +810,43 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			if (line != null) {
 				animationCircle.setVisible(false);
 			}
-			new LineAnimation().start();
+			new LineAnimation();
 		}
 
 	}
 
+	private class SlideAnimation extends Animation {
+
+		private final double initialSpeedX;
+		private final double initialSpeedY;
+		private final int initialViewX;
+		private final int initialViewY;
+		private final int time;
+
+		public SlideAnimation(double speedX, double speedY) {
+			double speed = Math.sqrt(speedX * speedX + speedY * speedY);
+			initialSpeedX = speedX;
+			initialSpeedY = speedY;
+			initialViewX = viewX;
+			initialViewY = viewY;
+			time = (int) (400 * speed);
+			run(time);
+		}
+
+		protected void onUpdate(double progress) {
+			//progress = time * Math.log1p(progress) / Math.log1p(1);
+			progress = time * Math.sqrt(progress);
+			viewX = (int) (initialViewX - initialSpeedX * progress);
+			viewY = (int) (initialViewY - initialSpeedY * progress);
+			nodeManager.updateView(viewX, viewY);
+			coordinate.updateView(viewX, viewY);
+		}
+	}
+
+	// TODO (Bug) strange slide by click iPhone4
 	// TODO (High) concept -> redesign
 	// TODO (Middle) open all children
 	// TODO (Middle) Re-position child nodes
-	// TODO (Low) slide like iphone (speed detection)
 	// TODO (Low) auto-scroll to a certain position (to a child node?)
 	// TODO (Low) search text and auto-scroll
 	// TODO (Low) textbox focus in dialogs, textbox enter to OK

@@ -116,7 +116,7 @@ public class NeuronNode extends Group {
 	}
 	
 	private void updateText(){
-		text.setText("("+posX+","+posY+") " +content + " [" + children + "]");
+		text.setText(content + " (" + children + ")");
 	}
 
 	public void increaseChildren() {
@@ -179,15 +179,8 @@ public class NeuronNode extends Group {
 	}
 
 	public void setPosition(int posX, int posY){
-		boolean positionUpdated = false;
-		if(this.posX != posX || this.posY != posY){
-			positionUpdated = true;
-		}
 		this.posX = posX;
 		this.posY = posY;
-		if(positionUpdated){
-			updateText();
-		}
 		int x = this.posX - viewX;
 		text.setX(x - textWidth / 2);
 		rect.setX(x - textWidth / 2 - TEXT_MARGIN_LEFT);
