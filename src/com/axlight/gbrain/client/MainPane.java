@@ -325,9 +325,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			radioPanel.add(top);
 			child = new RadioButton("toporchild", "Child");
 			radioPanel.add(child);
-			if(selectNode == null){
+			if (selectNode == null) {
 				top.setValue(true);
-			}else{
+			} else {
 				child.setValue(true);
 			}
 
@@ -844,7 +844,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 
 		protected void onUpdate(double progress) {
-			//progress = time * Math.log1p(progress) / Math.log1p(1);
+			// progress = time * Math.log1p(progress) / Math.log1p(1);
 			progress = time * Math.sqrt(progress);
 			viewX = (int) (initialViewX - initialSpeedX * progress);
 			viewY = (int) (initialViewY - initialSpeedY * progress);
