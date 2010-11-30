@@ -55,20 +55,23 @@ public class Neuron {
     @Persistent
     private int y;
     
+    @Persistent
+    private String color;
+    
     public Neuron(String content, int x, int y) {
+    	this(null, content, x, y);
+    }
+
+    public Neuron(Long parentId, String content, int x, int y) {
     	UserService userService = UserServiceFactory.getUserService();
         this.author = userService.getCurrentUser();
         this.content = content;
         this.created = new Date();
-        this.parentId = null;
+        this.parentId = parentId;
         this.children = 0;
         this.x = x;
         this.y = y;
-    }
-
-    public Neuron(Long parentId, String content, int x, int y) {
-    	this(content, x, y);
-        this.parentId = parentId;
+        this.color = null;
     }
 
     public long getId() {
@@ -104,6 +107,10 @@ public class Neuron {
 		return y;
 	}
 	
+	public String getColor() {
+		return color;
+	}
+	
 	public void setContent(String content) {
         this.content = content;
     }
@@ -126,6 +133,10 @@ public class Neuron {
 
 	public void setY(int y) {
 		this.y = y;
+	}
+	
+	public void setColor(String color){
+		this.color = color;
 	}
 	
     public NeuronData toNeuronData(){

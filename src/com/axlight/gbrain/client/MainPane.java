@@ -31,8 +31,8 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -116,6 +116,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
 					new AlertDialog("Nothing is selected.");
+					return;
+				}
+				if (selectNode.getChildren() > 0) {
+					new AlertDialog("You can't delete it with children.");
 					return;
 				}
 				final NeuronNode tmpSelectNode = selectNode;
@@ -222,7 +226,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		viewX = -drawArea.getWidth() / 2;
 		viewY = -drawArea.getHeight() / 2;
 		coordinate = new Coordinate(drawArea, viewX, viewY);
-		Window.scrollTo(0, 0);
+		Window.scrollTo(0, IPHONE_EXTRA_HEIGHT);
 
 		supportDragAndDrop();
 		new LineAnimation();
@@ -235,7 +239,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		drawArea.setWidth(screenWidth);
 		drawArea.setHeight(screenHeight);
 		coordinate.updateView(viewX, viewY);
-		Window.scrollTo(0, 0);
+		Window.scrollTo(0, IPHONE_EXTRA_HEIGHT);
 	}
 
 	private class AlertDialog extends DialogBox {
@@ -260,6 +264,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			});
 
 			center();
+			close.setFocus(true);
 		}
 	}
 
@@ -317,10 +322,14 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			HorizontalPanel radioPanel = new HorizontalPanel();
 			radioPanel.setSpacing(5);
 			top = new RadioButton("toporchild", "Top");
-			top.setValue(true);
 			radioPanel.add(top);
 			child = new RadioButton("toporchild", "Child");
 			radioPanel.add(child);
+			if(selectNode == null){
+				top.setValue(true);
+			}else{
+				child.setValue(true);
+			}
 
 			HorizontalPanel buttonPanel = new HorizontalPanel();
 			buttonPanel.setSpacing(5);
@@ -337,9 +346,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			basePanel.add(buttonPanel);
 			add(basePanel);
 
-			content.addKeyPressHandler(new KeyPressHandler() {
-				public void onKeyPress(KeyPressEvent event) {
-					if (event.getCharCode() == KeyCodes.KEY_ENTER) {
+			content.addKeyDownHandler(new KeyDownHandler() {
+				public void onKeyDown(KeyDownEvent event) {
+					if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 						handleEnter();
 					}
 				}
@@ -356,6 +365,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			});
 
 			center();
+			content.setFocus(true);
 		}
 
 		private void handleEnter() {
@@ -843,17 +853,19 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 	}
 
-	// TODO (Bug) strange slide by click iPhone4
-	// TODO (High) concept -> redesign
-	// TODO (Middle) open all children
-	// TODO (Middle) Re-position child nodes
+	// TODO (Middle) black background, image rect
+	// TODO (Middle) only onclick, browser scroll
+	// TODO (Middle) color selection
+	// TODO (Low) open all children
+	// TODO (Low) Re-position child nodes
 	// TODO (Low) auto-scroll to a certain position (to a child node?)
 	// TODO (Low) search text and auto-scroll
-	// TODO (Low) textbox focus in dialogs, textbox enter to OK
-	// TODO (App) Land
-	// TODO (App) from twitter
-	// TODO separated DragAndDropSupport.java (reusable version)
-	// TODO progress indicator
-	// TODO unlink parent button (make it as top)
+	// TODO (Low) channel to update immediately
+	// TODO (Low) Move to trash rather than delete
+	// TODO (Low) progress indicator
+	// TODO (Low) unlink parent button (make it as top)
+	// TODO (Idea) Land
+	// TODO (Idea) submit from twitter
+	// TODO (Future) separated DragAndDropSupport.java (reusable version)
 
 }
