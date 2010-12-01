@@ -27,9 +27,13 @@ import com.axlight.gbrain.shared.FieldVerifier;
 import com.axlight.gbrain.shared.NeuronData;
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -43,6 +47,8 @@ import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ScrollEvent;
+import com.google.gwt.user.client.Window.ScrollHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
@@ -59,7 +65,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class MainPane extends AbsolutePanel implements ProvidesResize,
-		RequiresResize {
+		RequiresResize, ScrollHandler {
 
 	private final GBrainServiceAsync gbrainService = GWT
 			.create(GBrainService.class);
@@ -70,14 +76,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private final HorizontalPanel buttonPanel;
 	private final DrawingArea drawArea;
 	private final Coordinate coordinate;
+	private final Circle animationCircle;
 
 	private static final int BUTTON_SIZE = 28;
-	private static final int IPHONE_EXTRA_HEIGHT = 60;
+	private static final int SCREEN_SCALE = 5;
 
 	private int viewX;
 	private int viewY;
-
-	private SlideAnimation slideAnimation = null;
 
 	public MainPane() {
 		nodeManager = new NodeManager();
@@ -213,20 +218,37 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		buttonPanel.add(closeButton);
 		buttonPanel.add(jumpButton);
 
-		if (GBrain.isIPhone) {
-			RootLayoutPanel.get().getElement().getStyle().setBottom(
-					-IPHONE_EXTRA_HEIGHT, Unit.PX);
-		}
-		int screenWidth = Window.getClientWidth();
-		int screenHeight = Window.getClientHeight() + IPHONE_EXTRA_HEIGHT;
+		int clientWidth = Window.getClientWidth();
+		int clientHeight = Window.getClientHeight();
+		int screenWidth = clientWidth * (SCREEN_SCALE * 2 + 1);
+		int screenHeight = clientHeight * (SCREEN_SCALE * 2 + 1);
+		;
+		RootLayoutPanel.get().getElement().getStyle().setRight(
+				-clientWidth * SCREEN_SCALE * 2, Unit.PX);
+		RootLayoutPanel.get().getElement().getStyle().setBottom(
+				-clientHeight * SCREEN_SCALE * 2, Unit.PX);
 		drawArea = new DrawingArea(screenWidth, screenHeight);
 		drawArea.getElement().setId("gbrain-svgpanel");
+		drawArea.getElement().getStyle().setBackgroundColor("#000000");
 		this.add(drawArea, 0, 0);
 		this.add(buttonPanel, 0, 0);
 		viewX = -drawArea.getWidth() / 2;
 		viewY = -drawArea.getHeight() / 2;
 		coordinate = new Coordinate(drawArea, viewX, viewY);
-		Window.scrollTo(0, IPHONE_EXTRA_HEIGHT);
+		drawArea.add(coordinate);
+
+		animationCircle = new Circle(-10, -10, 3);
+		animationCircle.setFillColor("#cccccc");
+		animationCircle.setVisible(false);
+		drawArea.add(animationCircle);
+
+		Window
+				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
+						* SCREEN_SCALE);
+		Element welcome = Document.get().getElementById("gbrain-welcome");
+		welcome.getStyle().setLeft(clientWidth * SCREEN_SCALE + 20, Unit.PX);
+		welcome.getStyle().setTop(clientHeight * SCREEN_SCALE + 50, Unit.PX);
+		Window.addWindowScrollHandler(this);
 
 		supportDragAndDrop();
 		new LineAnimation();
@@ -234,12 +256,49 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public void onResize() {
-		int screenWidth = Window.getClientWidth();
-		int screenHeight = Window.getClientHeight() + IPHONE_EXTRA_HEIGHT;
+		int clientWidth = Window.getClientWidth();
+		int clientHeight = Window.getClientHeight();
+		int screenWidth = clientWidth * (SCREEN_SCALE * 2 + 1);
+		int screenHeight = clientHeight * (SCREEN_SCALE * 2 + 1);
+		RootLayoutPanel.get().getElement().getStyle().setRight(
+				-clientWidth * SCREEN_SCALE * 2, Unit.PX);
+		RootLayoutPanel.get().getElement().getStyle().setBottom(
+				-clientHeight * SCREEN_SCALE * 2, Unit.PX);
 		drawArea.setWidth(screenWidth);
 		drawArea.setHeight(screenHeight);
 		coordinate.updateView(viewX, viewY);
-		Window.scrollTo(0, IPHONE_EXTRA_HEIGHT);
+		Window
+				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
+						* SCREEN_SCALE);
+	}
+
+	public void onWindowScroll(ScrollEvent event) {
+		int clientWidth = Window.getClientWidth();
+		int clientHeight = Window.getClientHeight();
+		int left = event.getScrollLeft();
+		int top = event.getScrollTop();
+		int updateX = 0;
+		int updateY = 0;
+		if (left <= 0) {
+			updateX = -clientWidth * SCREEN_SCALE;
+		}
+		if (top <= 0) {
+			updateY = -clientHeight * SCREEN_SCALE;
+		}
+		if (left >= clientWidth * SCREEN_SCALE * 2) {
+			updateX = clientWidth * SCREEN_SCALE;
+		}
+		if (top >= clientHeight * SCREEN_SCALE * 2) {
+			updateY = clientHeight * SCREEN_SCALE;
+		}
+		if (updateX != 0 || updateY != 0) {
+			// TODO make glass effect
+			viewX += updateX;
+			viewY += updateY;
+			nodeManager.updateView(viewX, viewY);
+			coordinate.updateView(viewX, viewY);
+			Window.scrollTo(left - updateX, top - updateY);
+		}
 	}
 
 	private class AlertDialog extends DialogBox {
@@ -448,141 +507,104 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				});
 	}
 
+	private NeuronNode selectNode = null;
 	private NeuronNode dragNode = null;
 	private int dragStartX = 0;
 	private int dragStartY = 0;
-	private NeuronNode mouseOverNode = null;
-
-	private NeuronNode selectNode = null;
-	private long lastMouseDownTime = 0;
-	private int lastMouseDownX = 0;
-	private int lastMouseDownY = 0;
-	private long secondLastMouseDownTime = 0;
-	private int secondLastMouseDownX = 0;
-	private int secondLastMouseDownY = 0;
-	private static long CLICK_TIMEOUT = 600;
-	private static int CLICK_ALLOWANCE = 9;
+	private NeuronNode dragOverNode = null;
 
 	private boolean sliding = false;
 	private int slideStartX = 0;
 	private int slideStartY = 0;
-	private long slideStartTime = 0;
-	private double lastSlideSpeedX = 0;
-	private double lastSlideSpeedY = 0;
-	private static double MAX_SLIDE_SPEED = 3.0;
+
+	private void startDrag(NeuronNode n, int eventX, int eventY) {
+		dragNode = n;
+		dragStartX = eventX;
+		dragStartY = eventY;
+		savePositionNodeAndChildNodes(dragNode);
+	}
+
+	private void stopDrag() {
+		if (dragNode != null) {
+			if (dragOverNode != null) {
+				long newparent = dragOverNode.getId();
+				if (dragNode.getParentId() == null
+						|| dragNode.getParentId() != newparent) {
+					revertPositionNodeAndChildNodes(dragNode);
+					replaceParent(dragNode, newparent);
+					gbrainService.updateParent(dragNode.getId(), newparent,
+							nullCallback);
+				}
+				dragOverNode.unsetHighlight();
+				dragOverNode = null;
+			} else {
+				if (dragNode.isPositionUpdated()) {
+					updatePositionNodeAndChildNodes(dragNode);
+				}
+			}
+		}
+		dragNode = null;
+	}
+
+	public void updateDrag(int eventX, int eventY) {
+		if (dragNode != null) {
+			int offsetX = eventX - dragStartX;
+			int offsetY = eventY - dragStartY;
+			dragPositionNodeAndChildNodes(dragNode, offsetX, offsetY);
+			checkMouseOver(eventX, eventY);
+		}
+	}
 
 	private void supportDragAndDrop() {
 		drawArea.addMouseDownHandler(new MouseDownHandler() {
 			public void onMouseDown(MouseDownEvent event) {
-				if (slideAnimation != null) {
-					slideAnimation.cancel();
-					slideAnimation = null;
-				}
-				long now = System.currentTimeMillis();
 				int eventX = event.getX();
 				int eventY = event.getY();
 				if (selectNode != null
 						&& selectNode.containsPoint(eventX, eventY)) {
-					dragNode = selectNode;
-					dragStartX = eventX;
-					dragStartY = eventY;
-					savePositionNodeAndChildNodes(dragNode);
+					startDrag(selectNode, eventX, eventY);
 				} else {
 					sliding = true;
 					slideStartX = eventX;
 					slideStartY = eventY;
-					slideStartTime = now;
-					lastSlideSpeedX = 0;
-					lastSlideSpeedY = 0;
 				}
-				secondLastMouseDownTime = lastMouseDownTime;
-				secondLastMouseDownX = lastMouseDownX;
-				secondLastMouseDownY = lastMouseDownY;
-				lastMouseDownTime = now;
-				lastMouseDownX = eventX;
-				lastMouseDownY = eventY;
 			}
 		});
 		drawArea.addMouseUpHandler(new MouseUpHandler() {
 			public void onMouseUp(MouseUpEvent event) {
-				int eventX = event.getX();
-				int eventY = event.getY();
-				long now = System.currentTimeMillis();
-				if (now < lastMouseDownTime + CLICK_TIMEOUT
-						&& Math.abs(eventX - lastMouseDownX) < CLICK_ALLOWANCE
-						&& Math.abs(eventY - lastMouseDownY) < CLICK_ALLOWANCE) {
-					if (now < secondLastMouseDownTime + CLICK_TIMEOUT
-							&& Math.abs(eventX - secondLastMouseDownX) < CLICK_ALLOWANCE
-							&& Math.abs(eventY - secondLastMouseDownY) < CLICK_ALLOWANCE) {
-						if (nodeManager.hasAnyChildNodes(selectNode.getId())) {
-							removeChildNodes(selectNode);
-						} else {
-							refreshChildNeurons(selectNode.getId());
-						}
-						lastMouseDownTime = 0;
-					} else {
-						selectNodeByPosition(lastMouseDownX, lastMouseDownY);
-					}
-				} else if (dragNode != null) {
-					if (mouseOverNode != null) {
-						long newparent = mouseOverNode.getId();
-						if (dragNode.getParentId() == null
-								|| dragNode.getParentId() != newparent) {
-							revertPositionNodeAndChildNodes(dragNode);
-							replaceParent(dragNode, newparent);
-							gbrainService.updateParent(dragNode.getId(),
-									newparent, nullCallback);
-						}
-						mouseOverNode.unsetHighlight();
-						mouseOverNode = null;
-					} else {
-						if (dragNode.isPositionUpdated()) {
-							updatePositionNodeAndChildNodes(dragNode);
-						}
-					}
-				}
-				if (sliding) {
-					slideAnimation = new SlideAnimation(lastSlideSpeedX,
-							lastSlideSpeedY);
-				}
+				stopDrag();
 				sliding = false;
-				dragNode = null;
 			}
 		});
 		drawArea.addMouseMoveHandler(new MouseMoveHandler() {
 			public void onMouseMove(MouseMoveEvent event) {
-				if (dragNode != null) {
-					int offsetX = event.getX() - dragStartX;
-					int offsetY = event.getY() - dragStartY;
-					dragPositionNodeAndChildNodes(dragNode, offsetX, offsetY);
-					checkMouseOver(event.getX(), event.getY());
-				} else if (sliding) {
-					long now = System.currentTimeMillis();
-					int eventX = event.getX();
-					int eventY = event.getY();
-					lastSlideSpeedX = (double) (eventX - slideStartX)
-							/ (double) (now - slideStartTime);
-					lastSlideSpeedY = (double) (eventY - slideStartY)
-							/ (double) (now - slideStartTime);
-					if (Math.abs(lastSlideSpeedX) < MAX_SLIDE_SPEED
-							&& Math.abs(lastSlideSpeedY) < MAX_SLIDE_SPEED) {
-						viewX -= eventX - slideStartX;
-						viewY -= eventY - slideStartY;
-						nodeManager.updateView(viewX, viewY);
-						coordinate.updateView(viewX, viewY);
-						slideStartX = eventX;
-						slideStartY = eventY;
-						slideStartTime = now;
-					} else {
-						sliding = false;
-					}
+				int eventX = event.getX();
+				int eventY = event.getY();
+				updateDrag(eventX, eventY);
+				if (sliding) {
+					int left = Window.getScrollLeft();
+					int top = Window.getScrollTop();
+					left -= eventX - slideStartX;
+					top -= eventY - slideStartY;
+					Window.scrollTo(left, top);
+					// slideStartX = eventX;
+					// slideStartY = eventY;
+				}
+			}
+		});
+		drawArea.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				int eventX = event.getX();
+				int eventY = event.getY();
+				if (selectNode == null
+						|| !selectNode.containsPoint(eventX, eventY)) {
+					handleNodeClick(null);
 				}
 			}
 		});
 	}
 
-	private void selectNodeByPosition(int x, int y) {
-		NeuronNode n = findNodeByPosition(x, y, null);
+	private void handleNodeClick(NeuronNode n) {
 		if (selectNode != n) {
 			if (selectNode != null) {
 				selectNode.unsetFocus();
@@ -592,6 +614,14 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				selectNode.setFocus();
 				selectNode.bringToFront();
 			}
+		}
+	}
+
+	private void handleNodeDoubleClick(NeuronNode n) {
+		if (nodeManager.hasAnyChildNodes(n.getId())) {
+			removeChildNodes(n);
+		} else {
+			refreshChildNeurons(n.getId());
 		}
 	}
 
@@ -606,8 +636,21 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			}
 			return;
 		}
+
 		final NeuronNode node = new NeuronNode(nd, viewX, viewY);
+		node.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				handleNodeClick(node);
+			}
+		});
+		node.addDoubleClickHandler(new DoubleClickHandler() {
+			public void onDoubleClick(DoubleClickEvent event) {
+				handleNodeDoubleClick(node);
+			}
+		});
+
 		nodeManager.addNode(node);
+		node.getElement().addClassName("gbrain-node");
 		drawArea.add(node);
 
 		addParentLine(node);
@@ -623,10 +666,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			return;
 		}
 		Line line = new Line(0, 0, 0, 0);
+		line.setStrokeColor("#ffffff");
 		parentNode.addChildLine(n.getId(), line);
 		n.setParentLine(line);
-		drawArea.insert(line, drawArea.getVectorObjectCount()
-				- nodeManager.count());
+		drawArea.insert(line, 1);
 		new Animate(line, "strokewidth", 4, 1, 1000).start();
 	}
 
@@ -729,16 +772,16 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private void checkMouseOver(int x, int y) {
 		NeuronNode n = findNodeByPosition(x, y, dragNode);
 		if (n != null) {
-			if (mouseOverNode != n) {
-				if (mouseOverNode != null) {
-					mouseOverNode.unsetHighlight();
+			if (dragOverNode != n) {
+				if (dragOverNode != null) {
+					dragOverNode.unsetHighlight();
 				}
-				mouseOverNode = n;
-				mouseOverNode.setHighlight();
+				dragOverNode = n;
+				dragOverNode.setHighlight();
 			}
-		} else if (mouseOverNode != null) {
-			mouseOverNode.unsetHighlight();
-			mouseOverNode = null;
+		} else if (dragOverNode != null) {
+			dragOverNode.unsetHighlight();
+			dragOverNode = null;
 		}
 	}
 
@@ -756,7 +799,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		return null;
 	}
 
-	private Circle animationCircle = null;
 	private Iterator<NeuronNode> animationIte = null;
 
 	private class LineAnimation extends Animation {
@@ -764,14 +806,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		private Line line = null;
 
 		public LineAnimation() {
-			if (animationCircle == null) {
-				animationCircle = new Circle(-10, -10, 3);
-				animationCircle.setFillColor("black");
-				animationCircle.setVisible(false);
-				drawArea.insert(animationCircle, drawArea
-						.getVectorObjectCount()
-						- nodeManager.count());
-			}
 			try {
 				if (animationIte == null || !animationIte.hasNext()) {
 					animationIte = nodeManager.getAllNodes().iterator();
@@ -825,40 +859,16 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	private class SlideAnimation extends Animation {
-
-		private final double initialSpeedX;
-		private final double initialSpeedY;
-		private final int initialViewX;
-		private final int initialViewY;
-		private final int time;
-
-		public SlideAnimation(double speedX, double speedY) {
-			double speed = Math.sqrt(speedX * speedX + speedY * speedY);
-			initialSpeedX = speedX;
-			initialSpeedY = speedY;
-			initialViewX = viewX;
-			initialViewY = viewY;
-			time = (int) (400 * speed);
-			run(time);
-		}
-
-		protected void onUpdate(double progress) {
-			// progress = time * Math.log1p(progress) / Math.log1p(1);
-			progress = time * Math.sqrt(progress);
-			viewX = (int) (initialViewX - initialSpeedX * progress);
-			viewY = (int) (initialViewY - initialSpeedY * progress);
-			nodeManager.updateView(viewX, viewY);
-			coordinate.updateView(viewX, viewY);
-		}
-	}
-
-	// TODO (Middle) black background, image rect
-	// TODO (Middle) only onclick, browser scroll
+	// TODO (High) better coordinate to show the world
+	// TODO (High) scroll extension
+	// TODO (High) context button
+	// TODO (High) touch support
 	// TODO (Middle) color selection
+	// TODO (Middle) Home node which top nodes connect to
 	// TODO (Low) open all children
 	// TODO (Low) Re-position child nodes
-	// TODO (Low) auto-scroll to a certain position (to a child node?)
+	// TODO (Low) auto-scroll to a child position (random pick if multiple)
+	// TODO (Low) auto-scroll to a certain position
 	// TODO (Low) search text and auto-scroll
 	// TODO (Low) channel to update immediately
 	// TODO (Low) Move to trash rather than delete

@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.vaadin.gwtgraphics.client.DrawingArea;
 import org.vaadin.gwtgraphics.client.Group;
+import org.vaadin.gwtgraphics.client.Image;
 import org.vaadin.gwtgraphics.client.Line;
 import org.vaadin.gwtgraphics.client.shape.Rectangle;
 import org.vaadin.gwtgraphics.client.shape.Text;
@@ -34,10 +35,10 @@ import com.axlight.gbrain.shared.NeuronData;
 public class NeuronNode extends Group {
 
 	private static final int TEXT_FONT_SIZE = 11;
-	private static final int TEXT_MARGIN_TOP = 2;
-	private static final int TEXT_MARGIN_BOTTOM = 4;
-	private static final int TEXT_MARGIN_LEFT = 3;
-	private static final int TEXT_MARGIN_RIGHT = 6;
+	private static final int TEXT_MARGIN_TOP = 1;
+	private static final int TEXT_MARGIN_BOTTOM = 5;
+	private static final int TEXT_MARGIN_LEFT = 4;
+	private static final int TEXT_MARGIN_RIGHT = 7;
 
 	private final long id;
 	private Long parentId;
@@ -45,6 +46,7 @@ public class NeuronNode extends Group {
 	private int children;
 	private int posX;
 	private int posY;
+	private String color;
 
 	private int saveX;
 	private int saveY;
@@ -54,8 +56,9 @@ public class NeuronNode extends Group {
 	private final Text text;
 	private final int textWidth;
 	private final int textHeight;
-	private final Rectangle rect;
+	private final Image image;
 	private Line parentLine = null;
+	private Rectangle rect = null;
 	private final Map<Long, Line> childLines = new HashMap<Long, Line>();
 
 	public NeuronNode(NeuronData nd, int viewX, int viewY) {
@@ -65,6 +68,7 @@ public class NeuronNode extends Group {
 		children = nd.getChildren();
 		posX = nd.getX();
 		posY = nd.getY();
+		color = null;
 
 		saveX = posX;
 		saveY = posY;
@@ -73,20 +77,40 @@ public class NeuronNode extends Group {
 
 		text = new Text(0, 0, "");
 		updateText();
-		text.setFillColor("black");
+		text.setFillColor("#dddddd");
 		text.setStrokeWidth(0);
 		text.setFontFamily("Arial");
 		text.setFontSize(TEXT_FONT_SIZE);
 		textWidth = text.getTextWidth();
 		textHeight = text.getTextHeight();
 
-		rect = new Rectangle(0, 0, textWidth + TEXT_MARGIN_LEFT
+		String ext = ".png";
+		if (GBrain.isIPhone) {
+			ext = ".svg";
+		}
+		String dir = "images/";
+		String file;
+		if (textWidth <= 100) {
+			file = dir + "node_100x20_" + color + ext;
+		} else if (textWidth <= 200) {
+			file = dir + "node_200x20_" + color + ext;
+		} else if (textWidth <= 300) {
+			file = dir + "node_300x20_" + color + ext;
+		} else if (textWidth <= 400) {
+			file = dir + "node_400x20_" + color + ext;
+		} else if (textWidth <= 500) {
+			file = dir + "node_500x20_" + color + ext;
+		} else {
+			file = dir + "node_600x20_" + color + ext;
+		}
+
+		image = new Image(0, 0, textWidth + TEXT_MARGIN_LEFT
 				+ TEXT_MARGIN_RIGHT, textHeight + TEXT_MARGIN_TOP
-				+ TEXT_MARGIN_BOTTOM);
+				+ TEXT_MARGIN_BOTTOM, file);
 
 		setPosition(posX, posY);
 
-		add(rect);
+		add(image);
 		add(text);
 	}
 
@@ -114,8 +138,8 @@ public class NeuronNode extends Group {
 		this.children = children;
 		updateText();
 	}
-	
-	private void updateText(){
+
+	private void updateText() {
 		text.setText(content + " (" + children + ")");
 	}
 
@@ -146,28 +170,40 @@ public class NeuronNode extends Group {
 	 * call this when clicking this node
 	 */
 	public void setFocus() {
-		rect.setStrokeWidth(3);
+		text.setFillColor("#ffffff");
 	}
 
 	/**
 	 * the opposite of setFocus
 	 */
 	public void unsetFocus() {
-		rect.setStrokeWidth(1);
+		text.setFillColor("#dddddd");
 	}
 
 	/**
 	 * call this when mouse-overing this node
 	 */
 	public void setHighlight() {
-		rect.setFillColor("gray");
+		rect = new Rectangle(image.getX() - 2, image.getY() - 2, textWidth
+				+ TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT + 4, textHeight
+				+ TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM + 4);
+		rect.setFillOpacity(0);
+		rect.setStrokeColor("#eeeeee");
+		add(rect);
 	}
 
 	/**
 	 * the opposite of setHighlight
 	 */
 	public void unsetHighlight() {
-		rect.setFillColor("white");
+		removeRect();
+	}
+
+	private void removeRect() {
+		if (rect != null) {
+			remove(rect);
+			rect = null;
+		}
 	}
 
 	public int getPosX() {
@@ -178,15 +214,16 @@ public class NeuronNode extends Group {
 		return posY;
 	}
 
-	public void setPosition(int posX, int posY){
+	public void setPosition(int posX, int posY) {
+		removeRect();
 		this.posX = posX;
 		this.posY = posY;
 		int x = this.posX - viewX;
 		text.setX(x - textWidth / 2);
-		rect.setX(x - textWidth / 2 - TEXT_MARGIN_LEFT);
+		image.setX(x - textWidth / 2 - TEXT_MARGIN_LEFT);
 		int y = this.posY - viewY;
 		text.setY(y + textHeight / 2);
-		rect.setY(y - textHeight / 2 - TEXT_MARGIN_TOP);
+		image.setY(y - textHeight / 2 - TEXT_MARGIN_TOP);
 		for (Line l : childLines.values()) {
 			l.setX1(x);
 			l.setY1(y);
@@ -263,10 +300,10 @@ public class NeuronNode extends Group {
 				&& targetY <= y + textHeight / 2 + TEXT_MARGIN_BOTTOM;
 	}
 
-	public Line getParentLine(){
+	public Line getParentLine() {
 		return parentLine;
 	}
-	
+
 	public void setParentLine(Line line) {
 		int x = this.posX - viewX;
 		int y = this.posY - viewY;

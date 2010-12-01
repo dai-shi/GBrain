@@ -18,10 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.vaadin.gwtgraphics.client.DrawingArea;
+import org.vaadin.gwtgraphics.client.Group;
 import org.vaadin.gwtgraphics.client.Line;
 import org.vaadin.gwtgraphics.client.shape.Text;
 
-public class Coordinate {
+public class Coordinate extends Group{
 
 	private final DrawingArea drawArea;
 	private int drawAreaWidth = 0;
@@ -29,7 +30,7 @@ public class Coordinate {
 	private int viewX;
 	private int viewY;
 
-	private Text text;
+	//private Text text;
 	private List<Line> verticalLines = new ArrayList<Line>();
 	private List<Line> horizontalLines = new ArrayList<Line>();
 
@@ -38,12 +39,14 @@ public class Coordinate {
 		this.viewX = viewX;
 		this.viewY = viewY;
 
+		/*
 		text = new Text(0, 0, "");
-		text.setFillColor("#aaaaaa");
+		text.setFillColor("#555555");
 		text.setStrokeWidth(0);
 		text.setFontFamily("Arial");
 		text.setFontSize(9);
-		drawArea.add(text);
+		add(text);
+		*/
 
 		updateCoordinate();
 	}
@@ -68,6 +71,7 @@ public class Coordinate {
 		int width = drawArea.getWidth();
 		int height = drawArea.getHeight();
 
+		/*
 		if (drawAreaWidth != width) {
 			text.setX(width / 2);
 		}
@@ -76,7 +80,8 @@ public class Coordinate {
 		}
 		text.setText("(" + (viewX + width / 2) + "," + (viewY + height / 2)
 				+ ")");
-
+		*/
+		
 		int indX=0;
 		for (int x = (width / 2 - viewX) % LINE_MARGIN; x < width; x += LINE_MARGIN) {
 			Line line;
@@ -95,7 +100,7 @@ public class Coordinate {
 		for(int i = verticalLines.size() - 1; i >= indX; i--){
 			Line line = verticalLines.get(i);
 			verticalLines.remove(i);
-		    drawArea.remove(line);
+		    remove(line);
 		}
 
 		int indY=0;
@@ -117,7 +122,7 @@ public class Coordinate {
 		for(int i = horizontalLines.size() - 1; i >= indY; i--){
 			Line line = horizontalLines.get(i);
 			horizontalLines.remove(i);
-		    drawArea.remove(line);
+		    remove(line);
 		}
 
 		drawAreaWidth = width;
@@ -127,8 +132,8 @@ public class Coordinate {
 	private Line newLine(){
 		Line line = new Line(0,0,0,0);
 		line.setStrokeWidth(1);
-		line.setStrokeColor("#cccccc");
-		drawArea.insert(line, 0);
+		line.setStrokeColor("#333333");
+		insert(line, 0);
 		return line;
 	}
 	

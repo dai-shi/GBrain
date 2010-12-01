@@ -9,7 +9,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimam-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimam-scale=0.5, maximum-scale=2.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
@@ -28,9 +28,9 @@
         width: 250px;
         top: 50px;
         left: 20px;
-        border: dashed 5px #555555;
-        color: #000000;
-        background-color: #bbbbbb;
+        border: dashed 5px #999999;
+        color: #ffffff;
+        background-color: #333333;
         padding: 10px;
         cursor: pointer;
       }
@@ -39,12 +39,18 @@
         text-align: center;
       }
       
-      #gbrain-svgpanel {
+      .gbrain-node {
         -moz-user-select: none;
         -khtml-user-select: none;
         -webkit-user-select: none;
       }
 
+      #gbrain-svgpanel {
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+      }
+      
     </style>
     
 
@@ -102,7 +108,7 @@
   <!-- you can leave the body empty if you want  -->
   <!-- to create a completely dynamic UI.        -->
   <!--                                           -->
-  <body>
+  <body style="background-color: #000000">
 
     <!-- OPTIONAL: include this if you want history support -->
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
