@@ -45,7 +45,6 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
-import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ScrollEvent;
 import com.google.gwt.user.client.Window.ScrollHandler;
@@ -230,10 +229,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		drawArea = new DrawingArea(screenWidth, screenHeight);
 		drawArea.getElement().setId("gbrain-svgpanel");
 		drawArea.getElement().getStyle().setBackgroundColor("#000000");
-		this.add(drawArea, 0, 0);
-		this.add(buttonPanel, 0, 0);
 		viewX = -drawArea.getWidth() / 2;
 		viewY = -drawArea.getHeight() / 2;
+		this.add(drawArea, 0, 0);
+		this.add(buttonPanel, -viewX, -viewY);
 		coordinate = new Coordinate(drawArea, viewX, viewY);
 		drawArea.add(coordinate);
 
@@ -243,8 +242,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		drawArea.add(animationCircle);
 
 		Window
-				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
-						* SCREEN_SCALE);
+		.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
+				* SCREEN_SCALE);
 		Element welcome = Document.get().getElementById("gbrain-welcome");
 		welcome.getStyle().setLeft(clientWidth * SCREEN_SCALE + 20, Unit.PX);
 		welcome.getStyle().setTop(clientHeight * SCREEN_SCALE + 50, Unit.PX);
@@ -273,31 +272,25 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public void onWindowScroll(ScrollEvent event) {
-		int clientWidth = Window.getClientWidth();
-		int clientHeight = Window.getClientHeight();
 		int left = event.getScrollLeft();
 		int top = event.getScrollTop();
-		int updateX = 0;
-		int updateY = 0;
-		if (left <= 0) {
-			updateX = -clientWidth * SCREEN_SCALE;
-		}
-		if (top <= 0) {
-			updateY = -clientHeight * SCREEN_SCALE;
-		}
-		if (left >= clientWidth * SCREEN_SCALE * 2) {
-			updateX = clientWidth * SCREEN_SCALE;
-		}
-		if (top >= clientHeight * SCREEN_SCALE * 2) {
-			updateY = clientHeight * SCREEN_SCALE;
-		}
-		if (updateX != 0 || updateY != 0) {
+		handleScroll(left, top);
+	}
+	
+	private void handleScroll(int left, int top){
+		int clientWidth = Window.getClientWidth();
+		int clientHeight = Window.getClientHeight();
+		if (left <= 0 || top <=0 ||
+				left >= clientWidth * SCREEN_SCALE * 2 ||
+				top >= clientHeight * SCREEN_SCALE * 2) {
+			
 			// TODO make glass effect
-			viewX += updateX;
-			viewY += updateY;
+			viewX += left - clientWidth * SCREEN_SCALE;
+			viewY += top - clientHeight * SCREEN_SCALE;
 			nodeManager.updateView(viewX, viewY);
 			coordinate.updateView(viewX, viewY);
-			Window.scrollTo(left - updateX, top - updateY);
+			Window.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
+					* SCREEN_SCALE);
 		}
 	}
 
@@ -466,8 +459,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		};
 
 		if (parentNode == null) {
-			int x = viewX + Random.nextInt(100) + 100;
-			int y = viewY + Random.nextInt(100) + 100;
+			int x = viewX + buttonPanel.getAbsoluteLeft();
+			int y = viewY + buttonPanel.getAbsoluteTop()+ 50;
 			gbrainService.addNeuron(content, x, y, cb);
 		} else {
 			int x = parentNode.getPosX() + 80;
@@ -587,8 +580,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 					left -= eventX - slideStartX;
 					top -= eventY - slideStartY;
 					Window.scrollTo(left, top);
-					// slideStartX = eventX;
-					// slideStartY = eventY;
 				}
 			}
 		});
@@ -600,8 +591,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 						|| !selectNode.containsPoint(eventX, eventY)) {
 					handleNodeClick(null);
 				}
+				handleDrawAreaClick(eventX, eventY);
 			}
 		});
+	}
+	
+	private void handleDrawAreaClick(int eventX, int eventY){
+		this.setWidgetPosition(buttonPanel, eventX + 5, eventY - 38);
 	}
 
 	private void handleNodeClick(NeuronNode n) {
@@ -650,7 +646,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		});
 
 		nodeManager.addNode(node);
-		node.getElement().addClassName("gbrain-node");
 		drawArea.add(node);
 
 		addParentLine(node);
@@ -859,15 +854,15 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (High) better coordinate to show the world
-	// TODO (High) scroll extension
-	// TODO (High) context button
-	// TODO (High) touch support
+	// TODO (High) touch handler
+	// TODO (High) custom scroll handler
+	// TODO (High) circle coordinate too slow
+	// TODO (High) jump child/parent button, auto-scroll to a child position (random pick if multiple)
 	// TODO (Middle) color selection
-	// TODO (Middle) Home node which top nodes connect to
+	// TODO (Middle) jump siblings button (top siblings)
+	// TODO (Middle) slide animation 
 	// TODO (Low) open all children
 	// TODO (Low) Re-position child nodes
-	// TODO (Low) auto-scroll to a child position (random pick if multiple)
 	// TODO (Low) auto-scroll to a certain position
 	// TODO (Low) search text and auto-scroll
 	// TODO (Low) channel to update immediately

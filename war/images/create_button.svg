@@ -15,7 +15,7 @@
    version="1.1"
    inkscape:version="0.48.0 r9654"
    sodipodi:docname="create_button.svg"
-   inkscape:export-filename="C:\Documents and Settings\daishi\My Documents\create_button.png"
+   inkscape:export-filename="C:\Documents and Settings\daishi\My Documents\My Pictures\create_button.png"
    inkscape:export-xdpi="63"
    inkscape:export-ydpi="63">
   <defs
@@ -56,9 +56,19 @@
      id="layer1"
      transform="translate(0,-1012.3622)">
     <path
-       style="fill:#696969;fill-opacity:1;stroke:#000000;stroke-width:2.03999996;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="M 20 1.03125 C 16.410074 1.03125 13.53125 3.9100736 13.53125 7.5 L 13.53125 13.53125 L 7.5 13.53125 C 3.9100736 13.53125 1.03125 16.410074 1.03125 20 C 1.03125 23.589926 3.9100736 26.46875 7.5 26.46875 L 13.53125 26.46875 L 13.53125 32.5 C 13.53125 36.089926 16.410074 38.96875 20 38.96875 C 23.589926 38.96875 26.46875 36.089926 26.46875 32.5 L 26.46875 26.46875 L 32.5 26.46875 C 36.089926 26.46875 38.96875 23.589926 38.96875 20 C 38.96875 16.410074 36.089926 13.53125 32.5 13.53125 L 26.46875 13.53125 L 26.46875 7.5 C 26.46875 3.9100736 23.589926 1.03125 20 1.03125 z "
-       transform="translate(0,1012.3622)"
-       id="rect3759" />
+       sodipodi:type="arc"
+       style="fill:none;stroke:#888888;stroke-width:16.1682617;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path2983"
+       sodipodi:cx="-137.25685"
+       sodipodi:cy="-18.453865"
+       sodipodi:rx="21.945137"
+       sodipodi:ry="20.548628"
+       d="m -115.31171,-18.453865 c 0,11.3486937 -9.82518,20.5486278 -21.94514,20.5486278 -12.11997,0 -21.94514,-9.1999341 -21.94514,-20.5486278 0,-11.348694 9.82517,-20.548628 21.94514,-20.548628 12.11996,0 21.94514,9.199934 21.94514,20.548628 z"
+       transform="matrix(0.58724114,0,0,0.62715075,98.395887,1041.7286)" />
+    <path
+       style="fill:#696969;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 25.248159,1023.6113 c -2.649392,0 -4.773983,2.1247 -4.773983,4.7739 l 0,4.4512 -4.451106,0 c -2.649392,0 -4.773984,2.1247 -4.773984,4.7739 0,2.6495 2.124592,4.7741 4.773984,4.7741 l 4.451106,0 0,4.451 c 0,2.6495 2.124591,4.7741 4.773983,4.7741 2.649391,0 4.773983,-2.1246 4.773983,-4.7741 l 0,-4.451 4.451106,0 c 2.649392,0 4.773984,-2.1246 4.773984,-4.7741 0,-2.6492 -2.124592,-4.7739 -4.773984,-4.7739 l -4.451106,0 0,-4.4512 c 0,-2.6492 -2.124592,-4.7739 -4.773983,-4.7739 z"
+       id="rect3759"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>

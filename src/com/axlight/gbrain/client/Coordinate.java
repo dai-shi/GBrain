@@ -19,35 +19,20 @@ import java.util.List;
 
 import org.vaadin.gwtgraphics.client.DrawingArea;
 import org.vaadin.gwtgraphics.client.Group;
-import org.vaadin.gwtgraphics.client.Line;
-import org.vaadin.gwtgraphics.client.shape.Text;
+import org.vaadin.gwtgraphics.client.shape.Circle;
 
 public class Coordinate extends Group{
 
 	private final DrawingArea drawArea;
-	private int drawAreaWidth = 0;
-	private int drawAreaHeight = 0;
 	private int viewX;
 	private int viewY;
 
-	//private Text text;
-	private List<Line> verticalLines = new ArrayList<Line>();
-	private List<Line> horizontalLines = new ArrayList<Line>();
+	private List<Circle> circles = new ArrayList<Circle>();
 
 	public Coordinate(DrawingArea drawArea, int viewX, int viewY) {
 		this.drawArea = drawArea;
 		this.viewX = viewX;
 		this.viewY = viewY;
-
-		/*
-		text = new Text(0, 0, "");
-		text.setFillColor("#555555");
-		text.setStrokeWidth(0);
-		text.setFontFamily("Arial");
-		text.setFontSize(9);
-		add(text);
-		*/
-
 		updateCoordinate();
 	}
 
@@ -65,76 +50,70 @@ public class Coordinate extends Group{
 		updateCoordinate();
 	}
 
-	private static final int LINE_MARGIN = 100;
+	private static final int RADIUS_STEP = 100;
 
 	private void updateCoordinate() {
 		int width = drawArea.getWidth();
 		int height = drawArea.getHeight();
 
-		/*
-		if (drawAreaWidth != width) {
-			text.setX(width / 2);
+		int x1 = viewX * viewX;
+		int x2 = (viewX + width) * (viewX + width);
+		int y1 = viewY * viewY;
+		int y2 = (viewY + height) * (viewY + height);
+		final int minX;
+		final int minY;
+		final int maxX;
+		final int maxY;
+		if(x1 < x2){
+			minX = x1;
+			maxX = x2;
+		}else{
+			minX = x2;
+			maxX = x1;
 		}
-		if (drawAreaHeight != height) {
-			text.setY(height / 2);
+		if(y1 < y2){
+			minY = y1;
+			maxY = y2;
+		}else{
+			minY = y2;
+			maxY = y1;
 		}
-		text.setText("(" + (viewX + width / 2) + "," + (viewY + height / 2)
-				+ ")");
-		*/
+		int minDist = 0;
+		if(viewX > 0 || viewY > 0 || viewX + width < 0 || viewY + height < 0){
+			minDist = (int) Math.sqrt(minX + minY);
+		}
+		int maxDist = (int) Math.sqrt(maxX + maxY);
 		
-		int indX=0;
-		for (int x = (width / 2 - viewX) % LINE_MARGIN; x < width; x += LINE_MARGIN) {
-			Line line;
+		
+		int index=0;
+		for (int r = (minDist / RADIUS_STEP) * RADIUS_STEP; r < maxDist; r += RADIUS_STEP) {
+			Circle circle;
 			try{
-				line = verticalLines.get(indX);
+				circle = circles.get(index);
 			}catch(IndexOutOfBoundsException e){
-				line = newLine();
-				verticalLines.add(line);
+				circle = newCircle();
+				circles.add(circle);
 			}
-			line.setX1(x);
-			line.setY1(0);
-			line.setX2(x);
-			line.setY2(height);
-			indX++;
+			circle.setX(-viewX);
+			circle.setY(-viewY);
+			circle.setRadius(r);
+			index++;
 		}
-		for(int i = verticalLines.size() - 1; i >= indX; i--){
-			Line line = verticalLines.get(i);
-			verticalLines.remove(i);
-		    remove(line);
+		for(int i = circles.size() - 1; i >= index; i--){
+			Circle circle = circles.get(i);
+			circles.remove(i);
+		    remove(circle);
 		}
 
-		int indY=0;
-		for (int y = (height / 2 - viewY) % LINE_MARGIN; y < height; y += LINE_MARGIN) {
-			Line line;
-			try{
-				line = horizontalLines.get(indY);
-			}catch(IndexOutOfBoundsException e){
-				line = newLine();
-				horizontalLines.add(line);
-			}
-			line.setX1(0);
-			line.setY1(y);
-			line.setX2(width);
-			line.setY2(y);
-			line.setVisible(true);
-			indY++;
-		}
-		for(int i = horizontalLines.size() - 1; i >= indY; i--){
-			Line line = horizontalLines.get(i);
-			horizontalLines.remove(i);
-		    remove(line);
-		}
-
-		drawAreaWidth = width;
-		drawAreaHeight = height;
 	}
-
-	private Line newLine(){
-		Line line = new Line(0,0,0,0);
-		line.setStrokeWidth(1);
-		line.setStrokeColor("#333333");
-		insert(line, 0);
-		return line;
+	
+	private Circle newCircle(){
+		Circle circle = new Circle(0,0,0);
+		circle.setStrokeWidth(1);
+		circle.setStrokeColor("#333333");
+		circle.setFillOpacity(0);
+		insert(circle, 0);
+		return circle;
 	}
 	
 

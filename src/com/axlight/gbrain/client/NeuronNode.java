@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.vaadin.gwtgraphics.client.DrawingArea;
 import org.vaadin.gwtgraphics.client.Group;
-import org.vaadin.gwtgraphics.client.Image;
 import org.vaadin.gwtgraphics.client.Line;
 import org.vaadin.gwtgraphics.client.shape.Rectangle;
 import org.vaadin.gwtgraphics.client.shape.Text;
@@ -56,9 +55,9 @@ public class NeuronNode extends Group {
 	private final Text text;
 	private final int textWidth;
 	private final int textHeight;
-	private final Image image;
+	private final Rectangle rect;
 	private Line parentLine = null;
-	private Rectangle rect = null;
+	private Rectangle highlight = null;
 	private final Map<Long, Line> childLines = new HashMap<Long, Line>();
 
 	public NeuronNode(NeuronData nd, int viewX, int viewY) {
@@ -69,6 +68,9 @@ public class NeuronNode extends Group {
 		posX = nd.getX();
 		posY = nd.getY();
 		color = null;
+		if (color == null) {
+			color = "#888888";
+		}
 
 		saveX = posX;
 		saveY = posY;
@@ -84,33 +86,15 @@ public class NeuronNode extends Group {
 		textWidth = text.getTextWidth();
 		textHeight = text.getTextHeight();
 
-		String ext = ".png";
-		if (GBrain.isIPhone) {
-			ext = ".svg";
-		}
-		String dir = "images/";
-		String file;
-		if (textWidth <= 100) {
-			file = dir + "node_100x20_" + color + ext;
-		} else if (textWidth <= 200) {
-			file = dir + "node_200x20_" + color + ext;
-		} else if (textWidth <= 300) {
-			file = dir + "node_300x20_" + color + ext;
-		} else if (textWidth <= 400) {
-			file = dir + "node_400x20_" + color + ext;
-		} else if (textWidth <= 500) {
-			file = dir + "node_500x20_" + color + ext;
-		} else {
-			file = dir + "node_600x20_" + color + ext;
-		}
-
-		image = new Image(0, 0, textWidth + TEXT_MARGIN_LEFT
+		rect = new Rectangle(0, 0, textWidth + TEXT_MARGIN_LEFT
 				+ TEXT_MARGIN_RIGHT, textHeight + TEXT_MARGIN_TOP
-				+ TEXT_MARGIN_BOTTOM, file);
+				+ TEXT_MARGIN_BOTTOM);
+		rect.setFillColor(color);
+		rect.setStrokeWidth(0);
 
 		setPosition(posX, posY);
 
-		add(image);
+		add(rect);
 		add(text);
 	}
 
@@ -184,12 +168,12 @@ public class NeuronNode extends Group {
 	 * call this when mouse-overing this node
 	 */
 	public void setHighlight() {
-		rect = new Rectangle(image.getX() - 2, image.getY() - 2, textWidth
+		highlight = new Rectangle(rect.getX() - 2, rect.getY() - 2, textWidth
 				+ TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT + 4, textHeight
 				+ TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM + 4);
-		rect.setFillOpacity(0);
-		rect.setStrokeColor("#eeeeee");
-		add(rect);
+		highlight.setFillOpacity(0);
+		highlight.setStrokeColor("#eeeeee");
+		add(highlight);
 	}
 
 	/**
@@ -200,9 +184,9 @@ public class NeuronNode extends Group {
 	}
 
 	private void removeRect() {
-		if (rect != null) {
-			remove(rect);
-			rect = null;
+		if (highlight != null) {
+			remove(highlight);
+			highlight = null;
 		}
 	}
 
@@ -220,10 +204,10 @@ public class NeuronNode extends Group {
 		this.posY = posY;
 		int x = this.posX - viewX;
 		text.setX(x - textWidth / 2);
-		image.setX(x - textWidth / 2 - TEXT_MARGIN_LEFT);
+		rect.setX(x - textWidth / 2 - TEXT_MARGIN_LEFT);
 		int y = this.posY - viewY;
 		text.setY(y + textHeight / 2);
-		image.setY(y - textHeight / 2 - TEXT_MARGIN_TOP);
+		rect.setY(y - textHeight / 2 - TEXT_MARGIN_TOP);
 		for (Line l : childLines.values()) {
 			l.setX1(x);
 			l.setY1(y);

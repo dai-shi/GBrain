@@ -15,7 +15,7 @@
    version="1.1"
    inkscape:version="0.48.0 r9654"
    sodipodi:docname="delete_button.svg"
-   inkscape:export-filename="C:\Documents and Settings\daishi\My Documents\delete_button.png"
+   inkscape:export-filename="C:\Documents and Settings\daishi\My Documents\My Pictures\delete_button.png"
    inkscape:export-xdpi="63"
    inkscape:export-ydpi="63">
   <defs
@@ -55,13 +55,23 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1012.3622)">
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#888888;stroke-width:16.16803169;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path2983"
+       sodipodi:cx="-137.25685"
+       sodipodi:cy="-18.453865"
+       sodipodi:rx="21.945137"
+       sodipodi:ry="20.548628"
+       d="m -115.31171,-18.453865 c 0,11.3486937 -9.82518,20.5486278 -21.94514,20.5486278 -12.11997,0 -21.94514,-9.1999341 -21.94514,-20.5486278 0,-11.348694 9.82517,-20.548628 21.94514,-20.548628 12.11996,0 21.94514,9.199934 21.94514,20.548628 z"
+       transform="matrix(0.58724114,0,0,0.62715075,98.395887,1041.7286)" />
     <rect
-       style="fill:#696969;fill-opacity:1;stroke:#000000;stroke-width:2.03999996;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#696969;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect3759"
-       width="37.960026"
-       height="12.960023"
-       x="1.0199871"
-       y="1025.8822"
-       ry="6.4800115" />
+       width="29.377224"
+       height="10.029748"
+       x="9.8334122"
+       y="1033.0431"
+       ry="5.014874" />
   </g>
 </svg>
