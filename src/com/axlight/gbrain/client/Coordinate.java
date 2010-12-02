@@ -33,7 +33,7 @@ public class Coordinate extends Group{
 		this.drawArea = drawArea;
 		this.viewX = viewX;
 		this.viewY = viewY;
-		updateCoordinate();
+		//updateCoordinate();
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class Coordinate extends Group{
 	public void updateView(int viewX, int viewY) {
 		this.viewX = viewX;
 		this.viewY = viewY;
-		updateCoordinate();
+		//updateCoordinate();
 	}
 
 	private static final int RADIUS_STEP = 100;

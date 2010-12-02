@@ -24,17 +24,45 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 public class GBrain implements EntryPoint {
 
 	public static boolean isIPhone = false;
+	private static MainPane mainPane = null;
+
+	public static void onScrollForGBrain(int scrollLeft, int scrollTop){
+		if(mainPane != null){
+			mainPane.onScrollForGBrain(scrollLeft, scrollTop);
+		}
+	}
+	
+	public static boolean onTouchStartForGBrain(int x, int y){
+		return true; //TODO
+	}
+	            
+	public static boolean onTouchMoveForGBrain(int x, int y){
+		return true; //TODO
+	}
+	            
+	public static boolean onTouchEndForGBrain(int x, int y){
+		return true; //TODO
+	}
+	            
+	public static native void exportStaticMethod() /*-{
+	    $wnd.onTouchStartForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchStartForGBrain(II));
+	    $wnd.onTouchMoveForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchMoveForGBrain(II));
+	    $wnd.onTouchEndForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchEndForGBrain(II));
+	    $wnd.onScrollForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onScrollForGBrain(II));
+	}-*/;
+
 
 	/**
-	 * This is the entry point method.
-	 */
+	* This is the entry point method.
+	*/
 	public void onModuleLoad() {
 		String userAgent = Window.Navigator.getUserAgent();
-		if (userAgent.indexOf("iPhone") >= 0) {
+		if(userAgent.indexOf("iPhone") >= 0){
 			isIPhone = true;
 		}
-		MainPane mainPane = new MainPane();
+		mainPane = new MainPane();
 		RootLayoutPanel.get().add(mainPane);
+		exportStaticMethod();
 	}
 
 }

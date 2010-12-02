@@ -221,7 +221,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		int clientHeight = Window.getClientHeight();
 		int screenWidth = clientWidth * (SCREEN_SCALE * 2 + 1);
 		int screenHeight = clientHeight * (SCREEN_SCALE * 2 + 1);
-		;
+
 		RootLayoutPanel.get().getElement().getStyle().setRight(
 				-clientWidth * SCREEN_SCALE * 2, Unit.PX);
 		RootLayoutPanel.get().getElement().getStyle().setBottom(
@@ -242,16 +242,16 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		drawArea.add(animationCircle);
 
 		Window
-		.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
-				* SCREEN_SCALE);
+				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
+						* SCREEN_SCALE);
 		Element welcome = Document.get().getElementById("gbrain-welcome");
 		welcome.getStyle().setLeft(clientWidth * SCREEN_SCALE + 20, Unit.PX);
 		welcome.getStyle().setTop(clientHeight * SCREEN_SCALE + 50, Unit.PX);
-		Window.addWindowScrollHandler(this);
 
 		supportDragAndDrop();
 		new LineAnimation();
 		refreshTopNeurons();
+		//Window.addWindowScrollHandler(this);
 	}
 
 	public void onResize() {
@@ -272,18 +272,16 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public void onWindowScroll(ScrollEvent event) {
-		int left = event.getScrollLeft();
-		int top = event.getScrollTop();
-		handleScroll(left, top);
+		Window.alert("onWindowScroll: left=" + event.getScrollLeft() + ",top="
+				+ event.getScrollTop());
 	}
-	
-	private void handleScroll(int left, int top){
+
+	public void onScrollForGBrain(int left, int top) {
 		int clientWidth = Window.getClientWidth();
 		int clientHeight = Window.getClientHeight();
-		if (left <= 0 || top <=0 ||
-				left >= clientWidth * SCREEN_SCALE * 2 ||
-				top >= clientHeight * SCREEN_SCALE * 2) {
-			
+		if (left <= 0 || top <= 0 || left >= clientWidth * SCREEN_SCALE * 2
+				|| top >= clientHeight * SCREEN_SCALE * 2) {
+
 			// TODO make glass effect
 			viewX += left - clientWidth * SCREEN_SCALE;
 			viewY += top - clientHeight * SCREEN_SCALE;
@@ -364,7 +362,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 		public CreateDialog() {
 			setModal(true);
-			// setGlassEnabled(true);
+			setGlassEnabled(true);
 			setText("Create New");
 
 			Label label = new Label("Enter Text (4~64 chars)");
@@ -460,7 +458,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 		if (parentNode == null) {
 			int x = viewX + buttonPanel.getAbsoluteLeft();
-			int y = viewY + buttonPanel.getAbsoluteTop()+ 50;
+			int y = viewY + buttonPanel.getAbsoluteTop() + 50;
 			gbrainService.addNeuron(content, x, y, cb);
 		} else {
 			int x = parentNode.getPosX() + 80;
@@ -595,8 +593,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			}
 		});
 	}
-	
-	private void handleDrawAreaClick(int eventX, int eventY){
+
+	private void handleDrawAreaClick(int eventX, int eventY) {
 		this.setWidgetPosition(buttonPanel, eventX + 5, eventY - 38);
 	}
 
@@ -854,13 +852,14 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (High) touch handler
-	// TODO (High) custom scroll handler
-	// TODO (High) circle coordinate too slow
-	// TODO (High) jump child/parent button, auto-scroll to a child position (random pick if multiple)
+	// TODO (High) circle coordinate too slow (iphone check)
+	// TODO (High) iphone dialog position bug
+	// TODO (High) iphone touch handler
+	// TODO (High) jump child/parent button, auto-scroll to a child position
+	// (random pick if multiple)
 	// TODO (Middle) color selection
 	// TODO (Middle) jump siblings button (top siblings)
-	// TODO (Middle) slide animation 
+	// TODO (Middle) slide animation
 	// TODO (Low) open all children
 	// TODO (Low) Re-position child nodes
 	// TODO (Low) auto-scroll to a certain position
