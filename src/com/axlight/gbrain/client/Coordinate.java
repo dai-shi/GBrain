@@ -21,7 +21,7 @@ import org.vaadin.gwtgraphics.client.DrawingArea;
 import org.vaadin.gwtgraphics.client.Group;
 import org.vaadin.gwtgraphics.client.shape.Circle;
 
-public class Coordinate extends Group{
+public class Coordinate extends Group {
 
 	private final DrawingArea drawArea;
 	private int viewX;
@@ -33,7 +33,7 @@ public class Coordinate extends Group{
 		this.drawArea = drawArea;
 		this.viewX = viewX;
 		this.viewY = viewY;
-		//updateCoordinate();
+		updateCoordinate();
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class Coordinate extends Group{
 	public void updateView(int viewX, int viewY) {
 		this.viewX = viewX;
 		this.viewY = viewY;
-		//updateCoordinate();
+		updateCoordinate();
 	}
 
 	private static final int RADIUS_STEP = 100;
@@ -64,33 +64,32 @@ public class Coordinate extends Group{
 		final int minY;
 		final int maxX;
 		final int maxY;
-		if(x1 < x2){
+		if (x1 < x2) {
 			minX = x1;
 			maxX = x2;
-		}else{
+		} else {
 			minX = x2;
 			maxX = x1;
 		}
-		if(y1 < y2){
+		if (y1 < y2) {
 			minY = y1;
 			maxY = y2;
-		}else{
+		} else {
 			minY = y2;
 			maxY = y1;
 		}
-		int minDist = 0;
-		if(viewX > 0 || viewY > 0 || viewX + width < 0 || viewY + height < 0){
-			minDist = (int) Math.sqrt(minX + minY);
+		int minDist = RADIUS_STEP;
+		if (viewX > 0 || viewY > 0 || viewX + width < 0 || viewY + height < 0) {
+			minDist = (int) Math.sqrt(minX + minY) + RADIUS_STEP;
 		}
 		int maxDist = (int) Math.sqrt(maxX + maxY);
-		
-		
-		int index=0;
+
+		int index = 0;
 		for (int r = (minDist / RADIUS_STEP) * RADIUS_STEP; r < maxDist; r += RADIUS_STEP) {
 			Circle circle;
-			try{
+			try {
 				circle = circles.get(index);
-			}catch(IndexOutOfBoundsException e){
+			} catch (IndexOutOfBoundsException e) {
 				circle = newCircle();
 				circles.add(circle);
 			}
@@ -99,22 +98,21 @@ public class Coordinate extends Group{
 			circle.setRadius(r);
 			index++;
 		}
-		for(int i = circles.size() - 1; i >= index; i--){
+		for (int i = circles.size() - 1; i >= index; i--) {
 			Circle circle = circles.get(i);
 			circles.remove(i);
-		    remove(circle);
+			remove(circle);
 		}
 
 	}
-	
-	private Circle newCircle(){
-		Circle circle = new Circle(0,0,0);
+
+	private Circle newCircle() {
+		Circle circle = new Circle(0, 0, 0);
 		circle.setStrokeWidth(1);
 		circle.setStrokeColor("#333333");
 		circle.setFillOpacity(0);
-		insert(circle, 0);
+		add(circle);
 		return circle;
 	}
-	
 
 }

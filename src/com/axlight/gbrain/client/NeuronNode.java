@@ -33,11 +33,12 @@ import com.axlight.gbrain.shared.NeuronData;
  */
 public class NeuronNode extends Group {
 
-	private static final int TEXT_FONT_SIZE = 11;
+	private static final String TEXT_FONT_FAMILY = "Arial Black";
+	private static final int TEXT_FONT_SIZE = 12;
 	private static final int TEXT_MARGIN_TOP = 1;
 	private static final int TEXT_MARGIN_BOTTOM = 5;
-	private static final int TEXT_MARGIN_LEFT = 4;
-	private static final int TEXT_MARGIN_RIGHT = 7;
+	private static final int TEXT_MARGIN_LEFT = 5;
+	private static final int TEXT_MARGIN_RIGHT = 6;
 
 	private final long id;
 	private Long parentId;
@@ -81,7 +82,7 @@ public class NeuronNode extends Group {
 		updateText();
 		text.setFillColor("#dddddd");
 		text.setStrokeWidth(0);
-		text.setFontFamily("Arial");
+		text.setFontFamily(TEXT_FONT_FAMILY);
 		text.setFontSize(TEXT_FONT_SIZE);
 		textWidth = text.getTextWidth();
 		textHeight = text.getTextHeight();

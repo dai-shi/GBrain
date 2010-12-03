@@ -33,21 +33,33 @@ public class GBrain implements EntryPoint {
 	}
 	
 	public static boolean onTouchStartForGBrain(int x, int y){
-		return true; //TODO
+		if(mainPane != null){
+			return mainPane.onTouchStartForGBrain(x, y);
+		}else{
+			return true;
+		}
 	}
 	            
 	public static boolean onTouchMoveForGBrain(int x, int y){
-		return true; //TODO
+		if(mainPane != null){
+			return mainPane.onTouchMoveForGBrain(x, y);
+		}else{
+			return true;
+		}
 	}
 	            
-	public static boolean onTouchEndForGBrain(int x, int y){
-		return true; //TODO
+	public static boolean onTouchEndForGBrain(){
+		if(mainPane != null){
+			return mainPane.onTouchEndForGBrain();
+		}else{
+			return true;
+		}
 	}
 	            
 	public static native void exportStaticMethod() /*-{
 	    $wnd.onTouchStartForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchStartForGBrain(II));
 	    $wnd.onTouchMoveForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchMoveForGBrain(II));
-	    $wnd.onTouchEndForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchEndForGBrain(II));
+	    $wnd.onTouchEndForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchEndForGBrain());
 	    $wnd.onScrollForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onScrollForGBrain(II));
 	}-*/;
 

@@ -34,9 +34,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -57,7 +54,6 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.PushButton;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -89,7 +85,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		nullCallback = new AsyncCallback<Void>() {
 			public void onFailure(Throwable caught) {
 				GWT.log("Network error!", caught);
-				new AlertDialog("Network error!");
+				showAlertDialog("Network error!");
 			}
 
 			public void onSuccess(Void ignored) {
@@ -105,7 +101,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 		PushButton createButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				new CreateDialog();
+				showCreateDialog();
 			}
 		});
 		createButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
@@ -119,24 +115,24 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		PushButton deleteButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
-					new AlertDialog("Nothing is selected.");
+					showAlertDialog("Nothing is selected.");
 					return;
 				}
 				if (selectNode.getChildren() > 0) {
-					new AlertDialog("You can't delete it with children.");
+					showAlertDialog("You can't delete it with children.");
 					return;
 				}
 				final NeuronNode tmpSelectNode = selectNode;
 				String content = tmpSelectNode.getContent();
 				final long id = tmpSelectNode.getId();
-				new ConfirmDialog("Are you sure you want to delete\n'"
+				showConfirmDialog("Are you sure you want to delete\n'"
 						+ content + "' ?", new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						gbrainService.deleteNeuron(id,
 								new AsyncCallback<Void>() {
 									public void onFailure(Throwable caught) {
 										GWT.log("Network error!", caught);
-										new AlertDialog("Network error!");
+										showAlertDialog("Network error!");
 									}
 
 									public void onSuccess(Void ignored) {
@@ -167,7 +163,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		PushButton openButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
-					new AlertDialog("Nothing is selected.");
+					showAlertDialog("Nothing is selected.");
 					return;
 				}
 				refreshChildNeurons(selectNode.getId());
@@ -184,7 +180,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		PushButton closeButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
-					new AlertDialog("Nothing is selected.");
+					showAlertDialog("Nothing is selected.");
 					return;
 				}
 				removeChildNodes(selectNode);
@@ -201,7 +197,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		PushButton jumpButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
-					new AlertDialog("Nothing is selected.");
+					showAlertDialog("Nothing is selected.");
 					return;
 				}
 				jumpToUrl(selectNode);
@@ -226,6 +222,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				-clientWidth * SCREEN_SCALE * 2, Unit.PX);
 		RootLayoutPanel.get().getElement().getStyle().setBottom(
 				-clientHeight * SCREEN_SCALE * 2, Unit.PX);
+
 		drawArea = new DrawingArea(screenWidth, screenHeight);
 		drawArea.getElement().setId("gbrain-svgpanel");
 		drawArea.getElement().getStyle().setBackgroundColor("#000000");
@@ -233,6 +230,14 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		viewY = -drawArea.getHeight() / 2;
 		this.add(drawArea, 0, 0);
 		this.add(buttonPanel, -viewX, -viewY);
+
+		Window
+		.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
+				* SCREEN_SCALE);
+		Element welcome = Document.get().getElementById("gbrain-welcome");
+		welcome.getStyle().setLeft(clientWidth * SCREEN_SCALE + 20, Unit.PX);
+		welcome.getStyle().setTop(clientHeight * SCREEN_SCALE + 50, Unit.PX);
+		
 		coordinate = new Coordinate(drawArea, viewX, viewY);
 		drawArea.add(coordinate);
 
@@ -241,17 +246,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		animationCircle.setVisible(false);
 		drawArea.add(animationCircle);
 
-		Window
-				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
-						* SCREEN_SCALE);
-		Element welcome = Document.get().getElementById("gbrain-welcome");
-		welcome.getStyle().setLeft(clientWidth * SCREEN_SCALE + 20, Unit.PX);
-		welcome.getStyle().setTop(clientHeight * SCREEN_SCALE + 50, Unit.PX);
-
 		supportDragAndDrop();
 		new LineAnimation();
 		refreshTopNeurons();
-		//Window.addWindowScrollHandler(this);
+		// Window.addWindowScrollHandler(this);
 	}
 
 	public void onResize() {
@@ -282,7 +280,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		if (left <= 0 || top <= 0 || left >= clientWidth * SCREEN_SCALE * 2
 				|| top >= clientHeight * SCREEN_SCALE * 2) {
 
-			// TODO make glass effect
+			// TODO make some kind of glass effect
 			viewX += left - clientWidth * SCREEN_SCALE;
 			viewY += top - clientHeight * SCREEN_SCALE;
 			nodeManager.updateView(viewX, viewY);
@@ -292,158 +290,138 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 	}
 
-	private class AlertDialog extends DialogBox {
-		public AlertDialog(String message) {
-			setModal(true);
-			// setGlassEnabled(true);
-			setText("Alert");
-
+	private void showAlertDialog(String message) {
+		if (GBrain.isIPhone) {
+			Window.alert(message);
+		} else {
+			final DialogBox dialog = new DialogBox();
+			dialog.setModal(true);
+			dialog.setGlassEnabled(true);
+			dialog.setText("Alert");
 			Label label = new Label(message);
 			Button close = new Button("Close");
-
 			VerticalPanel basePanel = new VerticalPanel();
 			basePanel.setSpacing(10);
 			basePanel.add(label);
 			basePanel.add(close);
-			add(basePanel);
-
+			dialog.add(basePanel);
 			close.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
-					hide();
+					dialog.hide();
 				}
 			});
-
-			center();
+			dialog.center();
 			close.setFocus(true);
 		}
 	}
 
-	private class ConfirmDialog extends DialogBox {
-		public ConfirmDialog(String message, final ClickHandler okHandler) {
-			setModal(true);
-			// setGlassEnabled(true);
-			setText("Confirm");
-
+	private void showConfirmDialog(String message, final ClickHandler okHandler) {
+		if (GBrain.isIPhone) {
+			if (Window.confirm(message)) {
+				okHandler.onClick(null);
+			}
+		} else {
+			final DialogBox dialog = new DialogBox();
+			dialog.setModal(true);
+			dialog.setGlassEnabled(true);
+			dialog.setText("Confirm");
 			Label label = new Label(message);
-
 			HorizontalPanel buttonPanel = new HorizontalPanel();
 			buttonPanel.setSpacing(5);
 			Button ok = new Button("OK");
 			buttonPanel.add(ok);
 			Button cancel = new Button("Cancel");
 			buttonPanel.add(cancel);
-
 			VerticalPanel basePanel = new VerticalPanel();
 			basePanel.setSpacing(10);
 			basePanel.add(label);
 			basePanel.add(buttonPanel);
-			add(basePanel);
-
+			dialog.add(basePanel);
 			ok.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					okHandler.onClick(event);
-					hide();
+					dialog.hide();
 				}
 			});
 			cancel.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
-					hide();
+					dialog.hide();
 				}
 			});
-
-			center();
+			dialog.center();
 		}
 	}
 
-	private class CreateDialog extends DialogBox {
-		private final TextBox content;
-		private final RadioButton top;
-		private final RadioButton child;
+	private interface PromptHandler {
+		public void handleResult(String input);
+	}
 
-		public CreateDialog() {
-			setModal(true);
-			setGlassEnabled(true);
-			setText("Create New");
-
-			Label label = new Label("Enter Text (4~64 chars)");
-
-			content = new TextBox();
-
-			HorizontalPanel radioPanel = new HorizontalPanel();
-			radioPanel.setSpacing(5);
-			top = new RadioButton("toporchild", "Top");
-			radioPanel.add(top);
-			child = new RadioButton("toporchild", "Child");
-			radioPanel.add(child);
-			if (selectNode == null) {
-				top.setValue(true);
-			} else {
-				child.setValue(true);
+	private void showPromptDialog(String message,
+			final PromptHandler promptHandler) {
+		if (GBrain.isIPhone) {
+			String input = Window.prompt(message, "");
+			if (input != null) {
+				promptHandler.handleResult(input);
 			}
-
+		} else {
+			final DialogBox dialog = new DialogBox();
+			dialog.setModal(true);
+			dialog.setGlassEnabled(true);
+			dialog.setText("Prompt");
+			Label label = new Label(message);
+			final TextBox textBox = new TextBox();
 			HorizontalPanel buttonPanel = new HorizontalPanel();
 			buttonPanel.setSpacing(5);
 			Button ok = new Button("OK");
 			buttonPanel.add(ok);
 			Button cancel = new Button("Cancel");
 			buttonPanel.add(cancel);
-
 			VerticalPanel basePanel = new VerticalPanel();
 			basePanel.setSpacing(10);
 			basePanel.add(label);
-			basePanel.add(content);
-			basePanel.add(radioPanel);
+			basePanel.add(textBox);
 			basePanel.add(buttonPanel);
-			add(basePanel);
-
-			content.addKeyDownHandler(new KeyDownHandler() {
-				public void onKeyDown(KeyDownEvent event) {
-					if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-						handleEnter();
-					}
-				}
-			});
+			dialog.add(basePanel);
 			ok.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
-					handleEnter();
+					promptHandler.handleResult(textBox.getText());
+					dialog.hide();
 				}
 			});
 			cancel.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
-					hide();
+					dialog.hide();
 				}
 			});
-
-			center();
-			content.setFocus(true);
+			dialog.center();
 		}
+	}
 
-		private void handleEnter() {
-			String text = content.getText();
-			if (!FieldVerifier.isValidContent(text)) {
-				new AlertDialog(
-						"Must be between 4 chars and 64 chars.\n(currently "
-								+ text.length() + " chars)");
-				return;
-			}
-			if (top.getValue()) {
-				createNewNeuron(text, null);
-			} else if (child.getValue()) {
-				if (selectNode == null) {
-					new AlertDialog("No parent is selected!");
+	private void showCreateDialog() {
+		String message = "[New ";
+		if (selectNode == null) {
+			message += "Top";
+		} else {
+			message += "Child";
+		}
+		message += "] Enter text in 4~64 chars:";
+		showPromptDialog(message, new PromptHandler() {
+			public void handleResult(String text) {
+				if (!FieldVerifier.isValidContent(text)) {
+					showAlertDialog("Must be between 4 chars and 64 chars.\n(currently "
+							+ text.length() + " chars)");
 					return;
 				}
 				createNewNeuron(text, selectNode);
 			}
-			hide();
-		}
+		});
 	}
 
 	public void createNewNeuron(String content, final NeuronNode parentNode) {
 		AsyncCallback<Void> cb = new AsyncCallback<Void>() {
 			public void onFailure(Throwable caught) {
 				GWT.log("Network error!", caught);
-				new AlertDialog("Network error!");
+				showAlertDialog("Network error!");
 			}
 
 			public void onSuccess(Void ignored) {
@@ -471,7 +449,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		gbrainService.getTopNeurons(new AsyncCallback<NeuronData[]>() {
 			public void onFailure(Throwable caught) {
 				GWT.log("Network error!", caught);
-				new AlertDialog("Network error!");
+				showAlertDialog("Network error!");
 			}
 
 			public void onSuccess(NeuronData[] neurons) {
@@ -487,7 +465,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				new AsyncCallback<NeuronData[]>() {
 					public void onFailure(Throwable caught) {
 						GWT.log("Network error!", caught);
-						new AlertDialog("Network error!");
+						showAlertDialog("Network error!");
 					}
 
 					public void onSuccess(NeuronData[] neurons) {
@@ -542,7 +520,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			int offsetX = eventX - dragStartX;
 			int offsetY = eventY - dragStartY;
 			dragPositionNodeAndChildNodes(dragNode, offsetX, offsetY);
-			checkMouseOver(eventX, eventY);
+			checkDragOver(eventX, eventY);
 		}
 	}
 
@@ -594,8 +572,37 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		});
 	}
 
+	public boolean onTouchStartForGBrain(int eventX, int eventY){
+		if (selectNode != null
+				&& selectNode.containsPoint(eventX, eventY)) {
+			startDrag(selectNode, eventX, eventY);
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	public boolean onTouchMoveForGBrain(int eventX, int eventY){
+		if(dragNode != null){
+			updateDrag(eventX, eventY);
+			Window.alert("dragged");
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	public boolean onTouchEndForGBrain(){
+		if(dragNode != null){
+			stopDrag();
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
 	private void handleDrawAreaClick(int eventX, int eventY) {
-		this.setWidgetPosition(buttonPanel, eventX + 5, eventY - 38);
+		this.setWidgetPosition(buttonPanel, eventX + 10, eventY - 43);
 	}
 
 	private void handleNodeClick(NeuronNode n) {
@@ -762,7 +769,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 	}
 
-	private void checkMouseOver(int x, int y) {
+	private void checkDragOver(int x, int y) {
 		NeuronNode n = findNodeByPosition(x, y, dragNode);
 		if (n != null) {
 			if (dragOverNode != n) {
@@ -852,11 +859,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (High) circle coordinate too slow (iphone check)
-	// TODO (High) iphone dialog position bug
 	// TODO (High) iphone touch handler
+	// TODO (High) can't scroll when zoom-in (iphone)
 	// TODO (High) jump child/parent button, auto-scroll to a child position
-	// (random pick if multiple)
+	// (child list w/ parent-index)
 	// TODO (Middle) color selection
 	// TODO (Middle) jump siblings button (top siblings)
 	// TODO (Middle) slide animation

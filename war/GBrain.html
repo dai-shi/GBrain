@@ -13,8 +13,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-    <link rel="shortcut icon" href="images/favicon.png">
-    <link rel="apple-touch-icon" href="images/apple-touch-icon.png"/> 
+    <link rel="shortcut icon" href="images/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" /> 
 
     <style type="text/css">
       .gwt-PushButton > img {
@@ -63,39 +63,11 @@
             setTimeout(gbrainSupportTouch, 500);
             return;
         }
-        
-        var handler = function (touchevent){
-          if(touchevent.changedTouches.length == 1){
-            var touch = touchevent.changedTouches[0];
-            var type = "";
-            switch(touchevent.type){
-            case "touchstart":
-              type = "mousedown";
-              break;
-            case "touchmove":
-              type="mousemove";
-              break;        
-            case "touchend":
-              type="mouseup";
-              break;
-            default:
-              return;
-            }
-
-            var event = document.createEvent("MouseEvent");
-            event.initMouseEvent(type, true, true, window, 1, touch.screenX, touch.screenY, touch.clientX, touch.clientY, false, false, false, false, 0, null);
-            touch.target.dispatchEvent(event);
-            touchevent.preventDefault();
-          }
-        };
-
-        //targetele.addEventListener("touchstart", handler, true);
-        //targetele.addEventListener("touchmove", handler, true);
-        //targetele.addEventListener("touchend", handler, true);
 
         targetele.addEventListener("touchstart", function(event){
             if(event.changedTouches.length == 1 &&
                 window.onTouchStartForGBrain(event.changedTouches[0].screenX, event.changedTouches[0].screenY) == false){
+              window.alert("prevent");
               event.preventDefault();
             }
         }, true);
@@ -109,17 +81,18 @@
         
         targetele.addEventListener("touchend", function(event){
             if(event.changedTouches.length == 1 &&
-                window.onTouchEndForGBrain(event.changedTouches[0].screenX, event.changedTouches[0].screenY) == false){
+                window.onTouchEndForGBrain() == false){
               event.preventDefault();
             }
         }, true);
         
-        //iPhone workaround (Window.ScrollHander won't get correct left&top)
+        //iPhone workaround (Window.ScrollHandler won't get correct left&top)
         window.addEventListener("scroll", function(event){
           window.onScrollForGBrain(window.pageXOffset || document.scrollLeft || 0,
                                    window.pageYOffset || document.scrollTop || 0);
         }, true);
       }
+      
       gbrainSupportTouch();
     </script>
     
@@ -133,7 +106,9 @@
   <body style="background-color: #000000">
 
     <!-- OPTIONAL: include this if you want history support -->
+    <!--
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+    -->
     
     <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
     <noscript>
