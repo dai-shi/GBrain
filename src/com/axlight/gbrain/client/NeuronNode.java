@@ -14,7 +14,10 @@
  */
 package com.axlight.gbrain.client;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.vaadin.gwtgraphics.client.DrawingArea;
@@ -40,13 +43,15 @@ public class NeuronNode extends Group {
 	private static final int TEXT_MARGIN_LEFT = 5;
 	private static final int TEXT_MARGIN_RIGHT = 6;
 
+	private static final List<String> COLORS = new ArrayList<String>(Arrays.asList("#aa0000","#550088","#007777","#448800"));
+	
 	private final long id;
 	private Long parentId;
 	private final String content;
 	private int children;
 	private int posX;
 	private int posY;
-	private String color;
+	private int colorIndex;
 
 	private int saveX;
 	private int saveY;
@@ -68,10 +73,7 @@ public class NeuronNode extends Group {
 		children = nd.getChildren();
 		posX = nd.getX();
 		posY = nd.getY();
-		color = null;
-		if (color == null) {
-			color = "#888888";
-		}
+		colorIndex = COLORS.indexOf(nd.getColor());
 
 		saveX = posX;
 		saveY = posY;
@@ -80,7 +82,7 @@ public class NeuronNode extends Group {
 
 		text = new Text(0, 0, "");
 		updateText();
-		text.setFillColor("#dddddd");
+		text.setFillColor("#ffffff");
 		text.setStrokeWidth(0);
 		text.setFontFamily(TEXT_FONT_FAMILY);
 		text.setFontSize(TEXT_FONT_SIZE);
@@ -90,7 +92,7 @@ public class NeuronNode extends Group {
 		rect = new Rectangle(0, 0, textWidth + TEXT_MARGIN_LEFT
 				+ TEXT_MARGIN_RIGHT, textHeight + TEXT_MARGIN_TOP
 				+ TEXT_MARGIN_BOTTOM);
-		rect.setFillColor(color);
+		rect.setFillColor(getColor());
 		rect.setStrokeWidth(0);
 
 		setPosition(posX, posY);
@@ -138,6 +140,22 @@ public class NeuronNode extends Group {
 		updateText();
 	}
 
+	public String getColor(){
+		if(colorIndex == -1){
+			return "#888888";
+		}else{
+			return COLORS.get(colorIndex);
+		}
+	}
+	
+	public void setNextColor(){
+		colorIndex++;
+		if(colorIndex >= COLORS.size()){
+			colorIndex = 0;
+		}
+		rect.setFillColor(getColor());
+	}
+	
 	public void bringToFront() {
 		DrawingArea parent = (DrawingArea) getParent();
 		parent.bringToFront(this);
@@ -155,14 +173,14 @@ public class NeuronNode extends Group {
 	 * call this when clicking this node
 	 */
 	public void setFocus() {
-		text.setFillColor("#ffffff");
+		text.setFillColor("#000000");
 	}
 
 	/**
 	 * the opposite of setFocus
 	 */
 	public void unsetFocus() {
-		text.setFillColor("#dddddd");
+		text.setFillColor("#ffffff");
 	}
 
 	/**

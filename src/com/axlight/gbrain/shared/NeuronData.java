@@ -26,18 +26,13 @@ public class NeuronData implements IsSerializable {
 	private int children;
 	private int x;
 	private int y;
+	private String color;
 	
 	NeuronData(){
-		this.id = 0;
-		this.content = null;
-		this.created = null;
-		this.children = 0;
-		this.parentId = null;
-		this.x = 0;
-		this.y = 0;
+		this(0, null, null, 0, null, 0, 0, null);
 	}
 	
-	public NeuronData(long id, String content, Date created, int children, Long parentId, int x, int y){
+	public NeuronData(long id, String content, Date created, int children, Long parentId, int x, int y, String color){
 		this.id = id;
 		this.content = content;
 		this.created = created;
@@ -45,6 +40,7 @@ public class NeuronData implements IsSerializable {
 		this.parentId = parentId;
 		this.x = x;
 		this.y = y;
+		this.color = color;
 	}
 	
 	public long getId() {
@@ -73,6 +69,10 @@ public class NeuronData implements IsSerializable {
 
 	public int getY() {
 		return y;
+	}
+
+	public String getColor() {
+		return color;
 	}
 	
 }

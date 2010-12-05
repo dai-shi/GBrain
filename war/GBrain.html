@@ -65,27 +65,26 @@
         }
 
         targetele.addEventListener("touchstart", function(event){
-            if(event.changedTouches.length == 1 &&
-                window.onTouchStartForGBrain(event.changedTouches[0].screenX, event.changedTouches[0].screenY) == false){
-              window.alert("prevent");
+        	if(event.touches.length == 1 &&
+                window.onTouchStartForGBrain(event.touches[0].pageX, event.touches[0].pageY) == false){
               event.preventDefault();
             }
         }, true);
         
         targetele.addEventListener("touchmove", function(event){
-            if(event.changedTouches.length == 1 &&
-                window.onTouchMoveForGBrain(event.changedTouches[0].screenX, event.changedTouches[0].screenY) == false){
+            if(event.touches.length == 1 &&
+                window.onTouchMoveForGBrain(event.touches[0].pageX, event.touches[0].pageY) == false){
               event.preventDefault();
             }
         }, true);
         
         targetele.addEventListener("touchend", function(event){
-            if(event.changedTouches.length == 1 &&
+            if(event.touches.length == 0 &&
                 window.onTouchEndForGBrain() == false){
               event.preventDefault();
             }
         }, true);
-        
+                
         //iPhone workaround (Window.ScrollHandler won't get correct left&top)
         window.addEventListener("scroll", function(event){
           window.onScrollForGBrain(window.pageXOffset || document.scrollLeft || 0,

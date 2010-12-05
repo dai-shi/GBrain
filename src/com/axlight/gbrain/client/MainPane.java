@@ -42,6 +42,7 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ScrollEvent;
 import com.google.gwt.user.client.Window.ScrollHandler;
@@ -190,6 +191,45 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		closeButton.setTitle("Close children");
 
 		if (GBrain.isIPhone) {
+			image = new Image("images/up_button.svg");
+		} else {
+			image = new Image("images/up_button.png");
+		}
+		PushButton upButton = new PushButton(image, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				Window.alert("to be supported");
+			}
+		});
+		upButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
+		upButton.setTitle("Jump to parent");
+
+		if (GBrain.isIPhone) {
+			image = new Image("images/down_button.svg");
+		} else {
+			image = new Image("images/down_button.png");
+		}
+		PushButton downButton = new PushButton(image, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				Window.alert("to be supported");
+			}
+		});
+		downButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
+		downButton.setTitle("Jump to a child");
+
+		if (GBrain.isIPhone) {
+			image = new Image("images/next_button.svg");
+		} else {
+			image = new Image("images/next_button.png");
+		}
+		PushButton nextButton = new PushButton(image, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				Window.alert("to be supported");
+			}
+		});
+		nextButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
+		nextButton.setTitle("Jump to the next sibling");
+
+		if (GBrain.isIPhone) {
 			image = new Image("images/jump_button.svg");
 		} else {
 			image = new Image("images/jump_button.png");
@@ -206,12 +246,29 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		jumpButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		jumpButton.setTitle("Jump to URL");
 
+		if (GBrain.isIPhone) {
+			image = new Image("images/color_button.svg");
+		} else {
+			image = new Image("images/color_button.png");
+		}
+		PushButton colorButton = new PushButton(image, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				Window.alert("to be supported");
+			}
+		});
+		colorButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
+		colorButton.setTitle("Change color");
+
 		buttonPanel = new HorizontalPanel();
 		buttonPanel.add(createButton);
 		buttonPanel.add(deleteButton);
 		buttonPanel.add(openButton);
 		buttonPanel.add(closeButton);
+		buttonPanel.add(upButton);
+		buttonPanel.add(downButton);
+		buttonPanel.add(nextButton);
 		buttonPanel.add(jumpButton);
+		buttonPanel.add(colorButton);
 
 		int clientWidth = Window.getClientWidth();
 		int clientHeight = Window.getClientHeight();
@@ -232,12 +289,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		this.add(buttonPanel, -viewX, -viewY);
 
 		Window
-		.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
-				* SCREEN_SCALE);
+				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
+						* SCREEN_SCALE);
 		Element welcome = Document.get().getElementById("gbrain-welcome");
 		welcome.getStyle().setLeft(clientWidth * SCREEN_SCALE + 20, Unit.PX);
 		welcome.getStyle().setTop(clientHeight * SCREEN_SCALE + 50, Unit.PX);
-		
+
 		coordinate = new Coordinate(drawArea, viewX, viewY);
 		drawArea.add(coordinate);
 
@@ -269,16 +326,27 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 						* SCREEN_SCALE);
 	}
 
+	// XXX unused
 	public void onWindowScroll(ScrollEvent event) {
 		Window.alert("onWindowScroll: left=" + event.getScrollLeft() + ",top="
 				+ event.getScrollTop());
 	}
 
+	private int previousScrollLeft = -1;
+	private int previousScrollTop = -1;
+	private int secondPreviousScrollLeft = -1;
+	private int secondPreviousScrollTop = -1;
+
 	public void onScrollForGBrain(int left, int top) {
 		int clientWidth = Window.getClientWidth();
 		int clientHeight = Window.getClientHeight();
-		if (left <= 0 || top <= 0 || left >= clientWidth * SCREEN_SCALE * 2
-				|| top >= clientHeight * SCREEN_SCALE * 2) {
+		if (left <= 0
+				|| top <= 0
+				|| left >= clientWidth * SCREEN_SCALE * 2
+				|| top >= clientHeight * SCREEN_SCALE * 2
+				|| (left == previousScrollLeft
+						&& left == secondPreviousScrollLeft
+						&& top == previousScrollTop && top == secondPreviousScrollTop)) {
 
 			// TODO make some kind of glass effect
 			viewX += left - clientWidth * SCREEN_SCALE;
@@ -288,6 +356,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			Window.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
 					* SCREEN_SCALE);
 		}
+		secondPreviousScrollLeft = previousScrollLeft;
+		secondPreviousScrollTop = previousScrollTop;
+		previousScrollLeft = left;
+		previousScrollTop = top;
 	}
 
 	private void showAlertDialog(String message) {
@@ -527,6 +599,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private void supportDragAndDrop() {
 		drawArea.addMouseDownHandler(new MouseDownHandler() {
 			public void onMouseDown(MouseDownEvent event) {
+				cacnelRelocateButtonPannel();
 				int eventX = event.getX();
 				int eventY = event.getY();
 				if (selectNode != null
@@ -572,37 +645,50 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		});
 	}
 
-	public boolean onTouchStartForGBrain(int eventX, int eventY){
-		if (selectNode != null
-				&& selectNode.containsPoint(eventX, eventY)) {
+	public boolean onTouchStartForGBrain(int eventX, int eventY) {
+		cacnelRelocateButtonPannel();
+		if (selectNode != null && selectNode.containsPoint(eventX, eventY)) {
 			startDrag(selectNode, eventX, eventY);
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
-	
-	public boolean onTouchMoveForGBrain(int eventX, int eventY){
-		if(dragNode != null){
+
+	public boolean onTouchMoveForGBrain(int eventX, int eventY) {
+		if (dragNode != null) {
 			updateDrag(eventX, eventY);
-			Window.alert("dragged");
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
-	
-	public boolean onTouchEndForGBrain(){
-		if(dragNode != null){
+
+	public boolean onTouchEndForGBrain() {
+		if (dragNode != null) {
 			stopDrag();
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
-	
-	private void handleDrawAreaClick(int eventX, int eventY) {
-		this.setWidgetPosition(buttonPanel, eventX + 10, eventY - 43);
+
+	private Timer relocateButtonPannelTimer = null;
+
+	private void handleDrawAreaClick(final int eventX, final int eventY) {
+		relocateButtonPannelTimer = new Timer() {
+			public void run() {
+				setWidgetPosition(buttonPanel, eventX + 10, eventY - 43);
+			}
+		};
+		relocateButtonPannelTimer.schedule(1000);
+	}
+
+	private void cacnelRelocateButtonPannel() {
+		if (relocateButtonPannelTimer != null) {
+			relocateButtonPannelTimer.cancel();
+			relocateButtonPannelTimer = null;
+		}
 	}
 
 	private void handleNodeClick(NeuronNode n) {
@@ -859,11 +945,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (High) iphone touch handler
-	// TODO (High) can't scroll when zoom-in (iphone)
-	// TODO (High) jump child/parent button, auto-scroll to a child position
-	// (child list w/ parent-index)
-	// TODO (Middle) color selection
+	// TODO (Middle) color selection (update color)
+	// TODO (Middle) NodeManager child list w/ parent-index
+	// TODO (Middle) jump child/parent button, auto-scroll to a child position
 	// TODO (Middle) jump siblings button (top siblings)
 	// TODO (Middle) slide animation
 	// TODO (Low) open all children
@@ -877,5 +961,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	// TODO (Idea) Land
 	// TODO (Idea) submit from twitter
 	// TODO (Future) separated DragAndDropSupport.java (reusable version)
+	// http://developer.apple.com/library/safari/#documentation/AppleApplications/Reference/SafariWebContent/HandlingEvents/HandlingEvents.html#//apple_ref/doc/uid/TP40006511-SW1
 
 }

@@ -140,7 +140,7 @@ public class Neuron {
 	}
 	
     public NeuronData toNeuronData(){
-    	return new NeuronData(id, content, created, children, parentId, x, y);
+    	return new NeuronData(id, content, created, children, parentId, x, y, color);
     }
     
 }

@@ -80,7 +80,13 @@ public class Coordinate extends Group {
 		}
 		int minDist = RADIUS_STEP;
 		if (viewX > 0 || viewY > 0 || viewX + width < 0 || viewY + height < 0) {
-			minDist = (int) Math.sqrt(minX + minY) + RADIUS_STEP;
+			if (viewX * (viewX + width) < 0 && viewY * (viewY+width) > 0){
+				minDist = (int) Math.sqrt(minY) + RADIUS_STEP;
+			}else if (viewX * (viewX + width) > 0 && viewY * (viewY+width) < 0){
+				minDist = (int) Math.sqrt(minX) + RADIUS_STEP;
+			}else{
+				minDist = (int) Math.sqrt(minX + minY) + RADIUS_STEP;
+			}
 		}
 		int maxDist = (int) Math.sqrt(maxX + maxY);
 
