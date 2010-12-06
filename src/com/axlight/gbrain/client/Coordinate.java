@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.vaadin.gwtgraphics.client.DrawingArea;
 import org.vaadin.gwtgraphics.client.Group;
-import org.vaadin.gwtgraphics.client.shape.Circle;
+import org.vaadin.gwtgraphics.client.Line;
 
 public class Coordinate extends Group {
 
@@ -27,7 +27,7 @@ public class Coordinate extends Group {
 	private int viewX;
 	private int viewY;
 
-	private List<Circle> circles = new ArrayList<Circle>();
+	private List<Line> lines = new ArrayList<Line>();
 
 	public Coordinate(DrawingArea drawArea, int viewX, int viewY) {
 		this.drawArea = drawArea;
@@ -50,7 +50,7 @@ public class Coordinate extends Group {
 		updateCoordinate();
 	}
 
-	private static final int RADIUS_STEP = 100;
+	private static final double DEGREE_STEP = Math.PI / 16.0;
 
 	private void updateCoordinate() {
 		int width = drawArea.getWidth();
@@ -60,65 +60,39 @@ public class Coordinate extends Group {
 		int x2 = (viewX + width) * (viewX + width);
 		int y1 = viewY * viewY;
 		int y2 = (viewY + height) * (viewY + height);
-		final int minX;
-		final int minY;
-		final int maxX;
-		final int maxY;
-		if (x1 < x2) {
-			minX = x1;
-			maxX = x2;
-		} else {
-			minX = x2;
-			maxX = x1;
-		}
-		if (y1 < y2) {
-			minY = y1;
-			maxY = y2;
-		} else {
-			minY = y2;
-			maxY = y1;
-		}
-		int minDist = RADIUS_STEP;
-		if (viewX > 0 || viewY > 0 || viewX + width < 0 || viewY + height < 0) {
-			if (viewX * (viewX + width) < 0 && viewY * (viewY+width) > 0){
-				minDist = (int) Math.sqrt(minY) + RADIUS_STEP;
-			}else if (viewX * (viewX + width) > 0 && viewY * (viewY+width) < 0){
-				minDist = (int) Math.sqrt(minX) + RADIUS_STEP;
-			}else{
-				minDist = (int) Math.sqrt(minX + minY) + RADIUS_STEP;
-			}
-		}
-		int maxDist = (int) Math.sqrt(maxX + maxY);
+		int maxX = x1 > x2 ? x1 : x2;
+		int maxY = y1 > y2 ? y1 : y2;
+		double radius = Math.sqrt(maxX + maxY);
 
 		int index = 0;
-		for (int r = (minDist / RADIUS_STEP) * RADIUS_STEP; r < maxDist; r += RADIUS_STEP) {
-			Circle circle;
+		for (double d = 0; d < Math.PI * 2; d += DEGREE_STEP) {
+			Line line;
 			try {
-				circle = circles.get(index);
+				line = lines.get(index);
 			} catch (IndexOutOfBoundsException e) {
-				circle = newCircle();
-				circles.add(circle);
+				line = newLine();
+				lines.add(line);
 			}
-			circle.setX(-viewX);
-			circle.setY(-viewY);
-			circle.setRadius(r);
+			line.setX1(-viewX);
+			line.setY1(-viewY);
+			line.setX2(-viewX + (int) (radius * Math.sin(d)));
+			line.setY2(-viewY + (int) (radius * Math.cos(d)));
 			index++;
 		}
-		for (int i = circles.size() - 1; i >= index; i--) {
-			Circle circle = circles.get(i);
-			circles.remove(i);
-			remove(circle);
+		for (int i = lines.size() - 1; i >= index; i--) {
+			Line line = lines.get(i);
+			lines.remove(i);
+			remove(line);
 		}
 
 	}
 
-	private Circle newCircle() {
-		Circle circle = new Circle(0, 0, 0);
-		circle.setStrokeWidth(1);
-		circle.setStrokeColor("#333333");
-		circle.setFillOpacity(0);
-		add(circle);
-		return circle;
+	private Line newLine() {
+		Line line = new Line(0, 0, 0, 0);
+		line.setStrokeWidth(1);
+		line.setStrokeColor("#333333");
+		add(line);
+		return line;
 	}
 
 }

@@ -66,14 +66,14 @@
 
         targetele.addEventListener("touchstart", function(event){
         	if(event.touches.length == 1 &&
-                window.onTouchStartForGBrain(event.touches[0].pageX, event.touches[0].pageY) == false){
+                window.onTouchStartForGBrain(event.touches[0].clientX, event.touches[0].clientY) == false){
               event.preventDefault();
             }
         }, true);
         
         targetele.addEventListener("touchmove", function(event){
             if(event.touches.length == 1 &&
-                window.onTouchMoveForGBrain(event.touches[0].pageX, event.touches[0].pageY) == false){
+                window.onTouchMoveForGBrain(event.touches[0].clientX, event.touches[0].clientY) == false){
               event.preventDefault();
             }
         }, true);

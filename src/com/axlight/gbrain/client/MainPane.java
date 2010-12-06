@@ -288,13 +288,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		this.add(drawArea, 0, 0);
 		this.add(buttonPanel, -viewX, -viewY);
 
-		Window
-				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
-						* SCREEN_SCALE);
-		Element welcome = Document.get().getElementById("gbrain-welcome");
-		welcome.getStyle().setLeft(clientWidth * SCREEN_SCALE + 20, Unit.PX);
-		welcome.getStyle().setTop(clientHeight * SCREEN_SCALE + 50, Unit.PX);
-
 		coordinate = new Coordinate(drawArea, viewX, viewY);
 		drawArea.add(coordinate);
 
@@ -303,6 +296,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		animationCircle.setVisible(false);
 		drawArea.add(animationCircle);
 
+		Window
+				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
+						* SCREEN_SCALE);
+		Element welcome = Document.get().getElementById("gbrain-welcome");
+		welcome.getStyle().setLeft(clientWidth * SCREEN_SCALE + 20, Unit.PX);
+		welcome.getStyle().setTop(clientHeight * SCREEN_SCALE + 50, Unit.PX);
+
 		supportDragAndDrop();
 		new LineAnimation();
 		refreshTopNeurons();
@@ -310,6 +310,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public void onResize() {
+		int prevCenterX = drawArea.getWidth() / 2;
+		int prevCenterY = drawArea.getHeight() / 2;
 		int clientWidth = Window.getClientWidth();
 		int clientHeight = Window.getClientHeight();
 		int screenWidth = clientWidth * (SCREEN_SCALE * 2 + 1);
@@ -318,8 +320,11 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				-clientWidth * SCREEN_SCALE * 2, Unit.PX);
 		RootLayoutPanel.get().getElement().getStyle().setBottom(
 				-clientHeight * SCREEN_SCALE * 2, Unit.PX);
+		viewX += prevCenterX - screenWidth / 2;
+		viewY += prevCenterY - screenHeight / 2;
 		drawArea.setWidth(screenWidth);
 		drawArea.setHeight(screenHeight);
+		nodeManager.updateView(viewX, viewY);
 		coordinate.updateView(viewX, viewY);
 		Window
 				.scrollTo(clientWidth * SCREEN_SCALE, clientHeight
