@@ -227,7 +227,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			}
 		});
 		nextButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
-		nextButton.setTitle("Jump to the next sibling");
+		nextButton.setTitle("Jump to next sibling");
 
 		if (GBrain.isIPhone) {
 			image = new Image("images/jump_button.svg");
@@ -253,7 +253,15 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 		PushButton colorButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				Window.alert("to be supported");
+				if (selectNode == null) {
+					showAlertDialog("Nothing is selected.");
+					return;
+				}
+				final NeuronNode tmpSelectNode = selectNode;
+				tmpSelectNode.setNextColor();
+				final String color = tmpSelectNode.getColor();
+				final long id = tmpSelectNode.getId();
+				gbrainService.updateColor(id, color, nullCallback);
 			}
 		});
 		colorButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
@@ -601,10 +609,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 	}
 
+	private boolean mouseMoved = false;
+	
 	private void supportDragAndDrop() {
 		drawArea.addMouseDownHandler(new MouseDownHandler() {
 			public void onMouseDown(MouseDownEvent event) {
-				cacnelRelocateButtonPannel();
+				cancelRelocateButtonPannel();
+				mouseMoved = false;
 				int eventX = event.getX();
 				int eventY = event.getY();
 				if (selectNode != null
@@ -621,10 +632,20 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			public void onMouseUp(MouseUpEvent event) {
 				stopDrag();
 				sliding = false;
+				if(!mouseMoved){ //clicked
+					int eventX = event.getX();
+					int eventY = event.getY();
+					if (selectNode != null
+							&& !selectNode.containsPoint(eventX, eventY)) {
+						handleNodeClick(null);
+					}
+					handleDrawAreaClick(eventX, eventY);
+				}
 			}
 		});
 		drawArea.addMouseMoveHandler(new MouseMoveHandler() {
 			public void onMouseMove(MouseMoveEvent event) {
+				mouseMoved = true;
 				int eventX = event.getX();
 				int eventY = event.getY();
 				updateDrag(eventX, eventY);
@@ -637,21 +658,17 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				}
 			}
 		});
-		drawArea.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				int eventX = event.getX();
-				int eventY = event.getY();
-				if (selectNode == null
-						|| !selectNode.containsPoint(eventX, eventY)) {
-					handleNodeClick(null);
-				}
-				handleDrawAreaClick(eventX, eventY);
-			}
-		});
 	}
 
+	private boolean touchMoved = false;
+	private int lastTouchX = 0;
+	private int lastTouchY = 0;
+
 	public boolean onTouchStartForGBrain(int eventX, int eventY) {
-		cacnelRelocateButtonPannel();
+		cancelRelocateButtonPannel();
+		touchMoved = false;
+		lastTouchX = eventX;
+		lastTouchY = eventY;
 		if (selectNode != null && selectNode.containsPoint(eventX, eventY)) {
 			startDrag(selectNode, eventX, eventY);
 			return false;
@@ -661,6 +678,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public boolean onTouchMoveForGBrain(int eventX, int eventY) {
+		touchMoved = true;
 		if (dragNode != null) {
 			updateDrag(eventX, eventY);
 			return false;
@@ -670,6 +688,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public boolean onTouchEndForGBrain() {
+		if(!touchMoved){ //clicked
+			if (selectNode != null
+					&& !selectNode.containsPoint(lastTouchX, lastTouchY)) {
+				handleNodeClick(null);
+			}
+			handleDrawAreaClick(lastTouchX, lastTouchY);
+		}
 		if (dragNode != null) {
 			stopDrag();
 			return false;
@@ -689,7 +714,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		relocateButtonPannelTimer.schedule(1000);
 	}
 
-	private void cacnelRelocateButtonPannel() {
+	private void cancelRelocateButtonPannel() {
 		if (relocateButtonPannelTimer != null) {
 			relocateButtonPannelTimer.cancel();
 			relocateButtonPannelTimer = null;
