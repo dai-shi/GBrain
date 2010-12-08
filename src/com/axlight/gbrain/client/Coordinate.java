@@ -29,11 +29,8 @@ public class Coordinate extends Group {
 
 	private List<Line> lines = new ArrayList<Line>();
 
-	public Coordinate(DrawingArea drawArea, int viewX, int viewY) {
+	public Coordinate(DrawingArea drawArea) {
 		this.drawArea = drawArea;
-		this.viewX = viewX;
-		this.viewY = viewY;
-		updateCoordinate();
 	}
 
 	/**
