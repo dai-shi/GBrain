@@ -116,6 +116,25 @@ public class NodeManager {
 		return null;
 	}
 
+	public NeuronNode getPreviousSiblingNode(long id) {
+		NeuronNode n = nodeMap.get(id);
+		if (n == null) {
+			return null;
+		}
+		List<NeuronNode> l = childrenMap.get(n.getParentId());
+		int size = l.size();
+		for (int i = size - 1; i >= 0; i--){
+			if (l.get(i).getId() == id) {
+				if (i - 1 >= 0) {
+					return l.get(i - 1);
+				}else{
+					return l.get(size - 1);
+				}
+			}
+		}
+		return null;
+	}
+
 	public void updateView(int viewX, int viewY) {
 		// XXX this could be slow with the number of nodes.
 		for (NeuronNode n : nodeMap.values()) {

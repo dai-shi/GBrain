@@ -29,7 +29,9 @@ import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
@@ -50,6 +52,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -69,7 +72,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private final NodeManager nodeManager;
 	private final AsyncCallback<Void> nullCallback;
 
-	private final HorizontalPanel buttonPanel;
+	private final FlowPanel buttonPanel;
 	private final DrawingArea drawArea;
 	private final Coordinate coordinate;
 	private final Circle animationCircle;
@@ -77,11 +80,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private static final int BUTTON_SIZE = 28;
 	private static final int SCREEN_SCALE = 5;
 
-	private int viewX;
-	private int viewY;
-	
-	private int windowClientWidth;
-	private int windowClientHeight;
+	private int viewX = 0;
+	private int viewY = 0;
+	private int windowClientWidth = 0;
+	private int windowClientHeight = 0;
 
 	public MainPane() {
 		nodeManager = new NodeManager();
@@ -208,8 +210,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				if (n == null) {
 					return;
 				}
-				handleNodeClick(n);				
-				scrollToPosition(n.getPosX(), n.getPosY());
+				handleNodeClick(n);
+				slideToPosition(n.getPosX(), n.getPosY());
 			}
 		});
 		upButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
@@ -226,12 +228,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 					showAlertDialog("Nothing is selected.");
 					return;
 				}
-				NeuronNode n = nodeManager.getFirstChildNode(selectNode.getId());
+				NeuronNode n = nodeManager
+						.getFirstChildNode(selectNode.getId());
 				if (n == null) {
 					return;
 				}
-				handleNodeClick(n);				
-				scrollToPosition(n.getPosX(), n.getPosY());
+				handleNodeClick(n);
+				slideToPosition(n.getPosX(), n.getPosY());
 			}
 		});
 		downButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
@@ -248,12 +251,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 					showAlertDialog("Nothing is selected.");
 					return;
 				}
-				NeuronNode n = nodeManager.getNextSiblingNode(selectNode.getId());
+				NeuronNode n = nodeManager.getNextSiblingNode(selectNode
+						.getId());
 				if (n == null) {
 					return;
 				}
-				handleNodeClick(n);				
-				scrollToPosition(n.getPosX(), n.getPosY());
+				handleNodeClick(n);
+				slideToPosition(n.getPosX(), n.getPosY());
 			}
 		});
 		nextButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
@@ -297,7 +301,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		colorButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		colorButton.setTitle("Change color");
 
-		buttonPanel = new HorizontalPanel();
+		buttonPanel = new FlowPanel();
 		buttonPanel.add(createButton);
 		buttonPanel.add(deleteButton);
 		buttonPanel.add(openButton);
@@ -308,20 +312,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		buttonPanel.add(jumpButton);
 		buttonPanel.add(colorButton);
 
-		windowClientWidth = Window.getClientWidth();
-		windowClientHeight = Window.getClientHeight();
-		RootLayoutPanel.get().getElement().getStyle().setRight(
-				-windowClientWidth * SCREEN_SCALE * 2, Unit.PX);
-		RootLayoutPanel.get().getElement().getStyle().setBottom(
-				-windowClientHeight * SCREEN_SCALE * 2, Unit.PX);
-
-		drawArea = new DrawingArea(windowClientWidth * (SCREEN_SCALE * 2 + 1),
-				windowClientHeight * (SCREEN_SCALE * 2 + 1));
+		drawArea = new DrawingArea(0, 0);
 		drawArea.getElement().setId("gbrain-svgpanel");
 		drawArea.getElement().getStyle().setBackgroundColor("#000000");
 
 		this.add(drawArea, 0, 0);
-		this.add(buttonPanel, 0, 0);
+		this.add(buttonPanel, -100, -100); // initially not visible
 
 		coordinate = new Coordinate(drawArea);
 		drawArea.add(coordinate);
@@ -331,40 +327,88 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		animationCircle.setVisible(false);
 		drawArea.add(animationCircle);
 
-		scrollToPosition(0, 0);
-		Element welcome = Document.get().getElementById("gbrain-welcome");
-		welcome.getStyle().setLeft((windowClientWidth * SCREEN_SCALE + windowClientWidth / 2) - welcome.getClientWidth() / 2, Unit.PX);
-		welcome.getStyle().setTop((windowClientHeight * SCREEN_SCALE + windowClientHeight / 2) - welcome.getClientHeight() / 2, Unit.PX);
-
 		supportDragAndDrop();
 		new LineAnimation();
 		refreshTopNeurons();
+
+		onResize();
+		Element welcome = Document.get().getElementById("gbrain-welcome");
+		welcome.getStyle().setLeft(
+				(windowClientWidth * SCREEN_SCALE + windowClientWidth / 2)
+						- welcome.getClientWidth() / 2, Unit.PX);
+		welcome.getStyle().setTop(
+				(windowClientHeight * SCREEN_SCALE + windowClientHeight / 2)
+						- welcome.getClientHeight() / 2, Unit.PX);
 		// Window.addWindowScrollHandler(this);
 	}
 
 	public void onResize() {
-		int prevCenterPosX = viewX + (windowClientWidth * SCREEN_SCALE + windowClientWidth / 2);
-		int prevCenterPosY = viewY + (windowClientHeight * SCREEN_SCALE + windowClientHeight / 2);
+		int prevCenterPosX = viewX
+				+ (windowClientWidth * SCREEN_SCALE + windowClientWidth / 2);
+		int prevCenterPosY = viewY
+				+ (windowClientHeight * SCREEN_SCALE + windowClientHeight / 2);
 		windowClientWidth = Window.getClientWidth();
 		windowClientHeight = Window.getClientHeight();
 		RootLayoutPanel.get().getElement().getStyle().setRight(
 				-windowClientWidth * SCREEN_SCALE * 2, Unit.PX);
 		RootLayoutPanel.get().getElement().getStyle().setBottom(
 				-windowClientHeight * SCREEN_SCALE * 2, Unit.PX);
+		buttonPanel.setWidth("" + (windowClientWidth * 9 / 10) + "px");
 		drawArea.setWidth(windowClientWidth * (SCREEN_SCALE * 2 + 1));
 		drawArea.setHeight(windowClientHeight * (SCREEN_SCALE * 2 + 1));
 
-		scrollToPosition(prevCenterPosX, prevCenterPosY);
+		relocateCenter(prevCenterPosX, prevCenterPosY);
 	}
-	
-	private void scrollToPosition(int posX, int posY) {
-		// TODO make some kind of glass effect
-		viewX = posX - (windowClientWidth * SCREEN_SCALE + windowClientWidth / 2);
-		viewY = posY - (windowClientHeight * SCREEN_SCALE + windowClientHeight / 2);
-		Window.scrollTo(windowClientWidth * SCREEN_SCALE,
-				windowClientHeight * SCREEN_SCALE);
+
+	private void relocateCenter(int posX, int posY) {
+		final Style glassStyle = Document.get().getElementById("gbrain-glass")
+				.getStyle();
+		glassStyle
+				.setWidth(windowClientWidth * (SCREEN_SCALE * 2 + 1), Unit.PX);
+		glassStyle.setHeight(windowClientHeight * (SCREEN_SCALE * 2 + 1),
+				Unit.PX);
+		glassStyle.setVisibility(Visibility.VISIBLE);
+		viewX = posX
+				- (windowClientWidth * SCREEN_SCALE + windowClientWidth / 2);
+		viewY = posY
+				- (windowClientHeight * SCREEN_SCALE + windowClientHeight / 2);
 		nodeManager.updateView(viewX, viewY);
 		coordinate.updateView(viewX, viewY);
+		new Timer() {
+			public void run() {
+				int left = windowClientWidth * SCREEN_SCALE;
+				int top = windowClientHeight * SCREEN_SCALE;
+				Window.scrollTo(left, top);
+				setWidgetPosition(buttonPanel, left, top);
+				glassStyle.setVisibility(Visibility.HIDDEN);
+			}
+		}.schedule(1000);
+	}
+
+	// XXX doesn't deal with sliding to a position outside of the view.
+	private void slideToPosition(int posX, int posY) {
+		final int lastLeft = previousScrollLeft;
+		final int lastTop = previousScrollTop;
+		int prevCenterPosX = viewX + lastLeft + windowClientWidth / 2;
+		int prevCenterPosY = viewY + lastTop + windowClientHeight / 2;
+		final int diffX = posX - prevCenterPosX;
+		final int diffY = posY - prevCenterPosY;
+		new Animation() {
+			protected void onUpdate(double progress) {
+				progress = interpolate(progress);
+				Window.scrollTo((int) (lastLeft + diffX * progress),
+						(int) (lastTop + diffY * progress));
+			}
+
+			protected void onComplete() {
+				previousScrollLeft = lastLeft + diffX;
+				previousScrollTop = lastTop + diffY;
+				Window.scrollTo(lastLeft + diffX, lastTop + diffY);
+				setWidgetPosition(buttonPanel, lastLeft + diffX - 1, lastTop
+						+ diffY - 1);
+			}
+		}.run(1500);
+
 	}
 
 	// XXX unused
@@ -378,7 +422,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private int secondPreviousScrollLeft = -1;
 	private int secondPreviousScrollTop = -1;
 
+	// XXX [second]previous is a hack for iPhone, which gives unexpected
+	// left&top.
 	public void onScrollForGBrain(int left, int top) {
+		setWidgetPosition(buttonPanel, left, top);
 		if (left <= 0
 				|| top <= 0
 				|| left >= windowClientWidth * SCREEN_SCALE * 2
@@ -389,7 +436,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 			int prevCenterPosX = viewX + left + windowClientWidth / 2;
 			int prevCenterPosY = viewY + top + windowClientHeight / 2;
-			scrollToPosition(prevCenterPosX, prevCenterPosY);
+			relocateCenter(prevCenterPosX, prevCenterPosY);
 		}
 		secondPreviousScrollLeft = previousScrollLeft;
 		secondPreviousScrollTop = previousScrollTop;
@@ -631,17 +678,17 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 	}
 
-	private boolean mouseMoved = false;
 	private boolean touchHandlerEnabled = false;
 
 	private void supportDragAndDrop() {
 		drawArea.addMouseDownHandler(new MouseDownHandler() {
 			public void onMouseDown(MouseDownEvent event) {
-				if(touchHandlerEnabled){
+				// XXX workaround for iPad, which fires mouse events even with
+				// preventDefault.
+				if (touchHandlerEnabled) {
 					return;
 				}
-				cancelRelocateButtonPannel();
-				mouseMoved = false;
+
 				int eventX = event.getX();
 				int eventY = event.getY();
 				if (selectNode != null
@@ -656,25 +703,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		});
 		drawArea.addMouseUpHandler(new MouseUpHandler() {
 			public void onMouseUp(MouseUpEvent event) {
-				if(touchHandlerEnabled){
-					return;
-				}
 				stopDrag();
 				sliding = false;
-				if (!mouseMoved) { // clicked
-					int eventX = event.getX();
-					int eventY = event.getY();
-					if (selectNode != null
-							&& !selectNode.containsPoint(eventX, eventY)) {
-						handleNodeClick(null);
-					}
-					handleDrawAreaClick(eventX, eventY);
-				}
 			}
 		});
 		drawArea.addMouseMoveHandler(new MouseMoveHandler() {
 			public void onMouseMove(MouseMoveEvent event) {
-				mouseMoved = true;
 				int eventX = event.getX();
 				int eventY = event.getY();
 				updateDrag(eventX, eventY);
@@ -689,16 +723,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		});
 	}
 
-	private boolean touchMoved = false;
-	private int lastTouchX = 0;
-	private int lastTouchY = 0;
-
 	public boolean onTouchStartForGBrain(int eventX, int eventY) {
 		touchHandlerEnabled = true;
-		cancelRelocateButtonPannel();
-		touchMoved = false;
-		lastTouchX = eventX;
-		lastTouchY = eventY;
 		if (selectNode != null && selectNode.containsPoint(eventX, eventY)) {
 			startDrag(selectNode, eventX, eventY);
 			return false;
@@ -708,7 +734,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public boolean onTouchMoveForGBrain(int eventX, int eventY) {
-		touchMoved = true;
 		if (dragNode != null) {
 			updateDrag(eventX, eventY);
 			return false;
@@ -721,33 +746,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		if (dragNode != null) {
 			stopDrag();
 			return false;
-		} else if (!touchMoved) { // clicked
-			if (selectNode != null
-					&& !selectNode.containsPoint(lastTouchX, lastTouchY)) {
-				handleNodeClick(null);
-			}
-			handleDrawAreaClick(lastTouchX, lastTouchY);
-			return false;
 		} else {
 			return true;
-		}
-	}
-
-	private Timer relocateButtonPannelTimer = null;
-
-	private void handleDrawAreaClick(final int eventX, final int eventY) {
-		relocateButtonPannelTimer = new Timer() {
-			public void run() {
-				setWidgetPosition(buttonPanel, eventX + 10, eventY - 43);
-			}
-		};
-		relocateButtonPannelTimer.schedule(1000);
-	}
-
-	private void cancelRelocateButtonPannel() {
-		if (relocateButtonPannelTimer != null) {
-			relocateButtonPannelTimer.cancel();
-			relocateButtonPannelTimer = null;
 		}
 	}
 
@@ -1005,9 +1005,11 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (High) check iPad,iPhone4 event/scroll positions
+	// TODO (High) check iPad,iPhone4 scroll positions
 	// TODO (Middle) jump to previous sibling button
-	// TODO (Middle) slide animation
+	// TODO (Middle) better button images for jumps (except url)
+	// TODO (Middle) button pannel not top (for web clip)
+	// TODO (Middle) line animation to all lines
 	// TODO (Low) open all children
 	// TODO (Low) Re-position child nodes
 	// TODO (Low) auto-scroll to a certain position

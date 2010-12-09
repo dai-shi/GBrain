@@ -17,6 +17,10 @@
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png" /> 
 
     <style type="text/css">
+      .gwt-PushButton {
+        float: left;
+      }
+    
       .gwt-PushButton > img {
         width: 28px;
         height: 28px;
@@ -37,6 +41,16 @@
       
       #gbrain-welcome > h1 {
         text-align: center;
+      }
+      
+      #gbrain-glass {
+        position: absolute;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        top: 0px;
+        left: 0px;
+        background-color: #222222;
       }
       
       #gbrain-svgpanel {
@@ -126,6 +140,9 @@ What you can do:<br/>
 2) Link with an existing text<br/>
 3) Place texts in good positions<br/>
     </div>
-    
+
+    <div id="gbrain-glass">
+    </div>
+
   </body>
 </html>
