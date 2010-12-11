@@ -14,9 +14,6 @@
  */
 package com.axlight.gbrain.client;
 
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-
 import org.vaadin.gwtgraphics.client.DrawingArea;
 import org.vaadin.gwtgraphics.client.Line;
 import org.vaadin.gwtgraphics.client.VectorObject;
@@ -75,8 +72,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private final FlowPanel buttonPanel;
 	private final DrawingArea drawArea;
 	private final Coordinate coordinate;
-	private final Circle animationCircle;
 
+	private static final int BUTTON_PANEL_MARGIN = 20;
 	private static final int BUTTON_SIZE = 28;
 	private static final int SCREEN_SCALE = 5;
 
@@ -322,13 +319,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		coordinate = new Coordinate(drawArea);
 		drawArea.add(coordinate);
 
-		animationCircle = new Circle(-10, -10, 3);
-		animationCircle.setFillColor("#cccccc");
-		animationCircle.setVisible(false);
-		drawArea.add(animationCircle);
-
 		supportDragAndDrop();
-		new LineAnimation();
 		refreshTopNeurons();
 
 		onResize();
@@ -339,7 +330,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		welcome.getStyle().setTop(
 				(windowClientHeight * SCREEN_SCALE + windowClientHeight / 2)
 						- welcome.getClientHeight() / 2, Unit.PX);
-		// Window.addWindowScrollHandler(this);
+		Window.addWindowScrollHandler(this);
 	}
 
 	public void onResize() {
@@ -353,7 +344,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				-windowClientWidth * SCREEN_SCALE * 2, Unit.PX);
 		RootLayoutPanel.get().getElement().getStyle().setBottom(
 				-windowClientHeight * SCREEN_SCALE * 2, Unit.PX);
-		buttonPanel.setWidth("" + (windowClientWidth * 9 / 10) + "px");
+		buttonPanel.setWidth("" + ((windowClientWidth - BUTTON_PANEL_MARGIN) * 9 / 10) + "px");
 		drawArea.setWidth(windowClientWidth * (SCREEN_SCALE * 2 + 1));
 		drawArea.setHeight(windowClientHeight * (SCREEN_SCALE * 2 + 1));
 
@@ -379,7 +370,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				int left = windowClientWidth * SCREEN_SCALE;
 				int top = windowClientHeight * SCREEN_SCALE;
 				Window.scrollTo(left, top);
-				setWidgetPosition(buttonPanel, left, top);
+				setWidgetPosition(buttonPanel, left + BUTTON_PANEL_MARGIN, top + BUTTON_PANEL_MARGIN);
 				glassStyle.setVisibility(Visibility.HIDDEN);
 			}
 		}.schedule(1000);
@@ -387,8 +378,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	// XXX doesn't deal with sliding to a position outside of the view.
 	private void slideToPosition(int posX, int posY) {
-		final int lastLeft = previousScrollLeft;
-		final int lastTop = previousScrollTop;
+		final int lastLeft = getWindowScrollLeft();
+		final int lastTop = getWindowScrollTop();
 		int prevCenterPosX = viewX + lastLeft + windowClientWidth / 2;
 		int prevCenterPosY = viewY + lastTop + windowClientHeight / 2;
 		final int diffX = posX - prevCenterPosX;
@@ -401,31 +392,19 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			}
 
 			protected void onComplete() {
-				previousScrollLeft = lastLeft + diffX;
-				previousScrollTop = lastTop + diffY;
 				Window.scrollTo(lastLeft + diffX, lastTop + diffY);
-				setWidgetPosition(buttonPanel, lastLeft + diffX - 1, lastTop
-						+ diffY - 1);
+				setWidgetPosition(buttonPanel, lastLeft + diffX - 1 + BUTTON_PANEL_MARGIN, lastTop
+						+ diffY - 1 + BUTTON_PANEL_MARGIN);
 			}
 		}.run(1500);
 
 	}
 
-	// XXX unused
 	public void onWindowScroll(ScrollEvent event) {
-		Window.alert("onWindowScroll: left=" + event.getScrollLeft() + ",top="
-				+ event.getScrollTop());
-	}
-
-	private int previousScrollLeft = -1;
-	private int previousScrollTop = -1;
-	private int secondPreviousScrollLeft = -1;
-	private int secondPreviousScrollTop = -1;
-
-	// XXX [second]previous is a hack for iPhone, which gives unexpected
-	// left&top.
-	public void onScrollForGBrain(int left, int top) {
-		setWidgetPosition(buttonPanel, left, top);
+		int left = getWindowScrollLeft();
+		int top = getWindowScrollTop();
+		setWidgetPosition(buttonPanel, left + BUTTON_PANEL_MARGIN, top + BUTTON_PANEL_MARGIN);
+		/*
 		if (left <= 0
 				|| top <= 0
 				|| left >= windowClientWidth * SCREEN_SCALE * 2
@@ -434,15 +413,24 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 						&& left == secondPreviousScrollLeft
 						&& top == previousScrollTop && top == secondPreviousScrollTop)) {
 
-			int prevCenterPosX = viewX + left + windowClientWidth / 2;
-			int prevCenterPosY = viewY + top + windowClientHeight / 2;
-			relocateCenter(prevCenterPosX, prevCenterPosY);
+			//int prevCenterPosX = viewX + left + windowClientWidth / 2;
+			//int prevCenterPosY = viewY + top + windowClientHeight / 2;
+			//relocateCenter(prevCenterPosX, prevCenterPosY);
 		}
 		secondPreviousScrollLeft = previousScrollLeft;
 		secondPreviousScrollTop = previousScrollTop;
 		previousScrollLeft = left;
 		previousScrollTop = top;
+		*/
 	}
+
+	private static native int getWindowScrollLeft() /*-{
+      return $wnd.pageXOffset || $doc.scrollLeft || 0
+	}-*/;
+
+	private static native int getWindowScrollTop() /*-{
+      return $wnd.pageYOffset || $doc.scrollTop || 0
+	}-*/;
 
 	private void showAlertDialog(String message) {
 		if (GBrain.isIPhone) {
@@ -751,6 +739,11 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 	}
 
+	public boolean onGestureEndForGBrain() {
+		onResize();
+		return true;
+	}
+	
 	private void handleNodeClick(NeuronNode n) {
 		if (selectNode != n) {
 			if (selectNode != null) {
@@ -811,12 +804,17 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		if (parentNode == null) {
 			return;
 		}
+		Circle circle = new Circle(-10, -10, 3);
+		circle.setFillColor("#cccccc");
+		circle.setVisible(false);
+		drawArea.insert(circle, 1);
 		Line line = new Line(0, 0, 0, 0);
 		line.setStrokeColor("#ffffff");
 		parentNode.addChildLine(n.getId(), line);
 		n.setParentLine(line);
 		drawArea.insert(line, 1);
 		new Animate(line, "strokewidth", 4, 1, 1000).start();
+		new LineAnimation(line, circle);
 	}
 
 	private void removeParentLine(NeuronNode n) {
@@ -945,74 +943,56 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		return null;
 	}
 
-	private Iterator<NeuronNode> animationIte = null;
-
 	private class LineAnimation extends Animation {
 
-		private Line line = null;
+		private final Line line;
+		private final Circle circle;
 
-		public LineAnimation() {
-			try {
-				if (animationIte == null || !animationIte.hasNext()) {
-					animationIte = nodeManager.getAllNodes().iterator();
-				}
-				while (animationIte.hasNext()) {
-					line = animationIte.next().getParentLine();
-					if (line != null) {
-						break;
-					}
-				}
-			} catch (ConcurrentModificationException e) {
-				animationIte = null;
-				line = null;
-			}
-			if (line == null) {
-				run(500);
-			} else {
-				run(3000);
-			}
+		public LineAnimation(Line line, Circle circle) {
+			this.line = line;
+			this.circle = circle;
+			run(3000);
 		}
 
 		protected void onStart() {
-			if (line != null && dragNode == null && sliding == false) {
-				animationCircle.setX(line.getX1());
-				animationCircle.setY(line.getY1());
-				animationCircle.setVisible(true);
+			if (line.getParent() != null && dragNode == null && sliding == false) {
+				circle.setX(line.getX1());
+				circle.setY(line.getY1());
+				circle.setVisible(true);
 			}
 		}
 
 		protected void onUpdate(double progress) {
-			if (line != null) {
-				if (line.getParent() == null || dragNode != null || sliding) {
-					animationCircle.setVisible(false);
-					line = null;
-				} else {
-					progress = interpolate(progress);
-					animationCircle.setX((int) (line.getX1() + progress
-							* (line.getX2() - line.getX1())));
-					animationCircle.setY((int) (line.getY1() + progress
-							* (line.getY2() - line.getY1())));
-				}
+			if (line.getParent() != null && dragNode == null && sliding == false) {
+				progress = interpolate(progress);
+				circle.setX((int) (line.getX1() + progress
+						* (line.getX2() - line.getX1())));
+				circle.setY((int) (line.getY1() + progress
+						* (line.getY2() - line.getY1())));
+			} else {
+				circle.setVisible(false);
 			}
 		}
 
 		protected void onComplete() {
-			if (line != null) {
-				animationCircle.setVisible(false);
+			circle.setVisible(false);
+			if(line.getParent() != null) {
+				new LineAnimation(line, circle);
+			} else {
+				drawArea.remove(circle);
 			}
-			new LineAnimation();
 		}
 
 	}
 
-	// TODO (High) check iPad,iPhone4 scroll positions
+	// TODO (High) redesign windowClient* (maybe windowInner* for iPhone)
+	// TODO (High) iPhone4 scroll event missing?
+	// TODO (High) edge buttons for extra views (relocateCenter)
 	// TODO (Middle) jump to previous sibling button
 	// TODO (Middle) better button images for jumps (except url)
-	// TODO (Middle) button pannel not top (for web clip)
-	// TODO (Middle) line animation to all lines
+	// TODO (Middle) button help on welcome page
 	// TODO (Low) open all children
 	// TODO (Low) Re-position child nodes
-	// TODO (Low) auto-scroll to a certain position
 	// TODO (Low) search text and auto-scroll
 	// TODO (Low) channel to update immediately
 	// TODO (Low) Move to trash rather than delete

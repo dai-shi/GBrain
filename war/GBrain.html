@@ -99,11 +99,12 @@
             }
         }, true);
                 
-        //iPhone workaround (Window.ScrollHandler won't get correct left&top)
-        window.addEventListener("scroll", function(event){
-          window.onScrollForGBrain(window.pageXOffset || document.scrollLeft || 0,
-                                   window.pageYOffset || document.scrollTop || 0);
+        targetele.addEventListener("gestureend", function(event){
+            if(window.onGestureEndForGBrain() == false){
+              event.preventDefault();
+            }
         }, true);
+
       }
       
       gbrainSupportTouch();

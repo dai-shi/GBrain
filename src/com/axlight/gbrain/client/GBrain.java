@@ -26,12 +26,6 @@ public class GBrain implements EntryPoint {
 	public static boolean isIPhone = false;
 	private static MainPane mainPane = null;
 
-	public static void onScrollForGBrain(int scrollLeft, int scrollTop){
-		if(mainPane != null){
-			mainPane.onScrollForGBrain(scrollLeft, scrollTop);
-		}
-	}
-	
 	public static boolean onTouchStartForGBrain(int x, int y){
 		if(mainPane != null){
 			return mainPane.onTouchStartForGBrain(x, y);
@@ -56,11 +50,19 @@ public class GBrain implements EntryPoint {
 		}
 	}
 	            
+	public static boolean onGestureEndForGBrain(){
+		if(mainPane != null){
+			return mainPane.onGestureEndForGBrain();
+		}else{
+			return true;
+		}
+	}
+	            
 	public static native void exportStaticMethod() /*-{
 	    $wnd.onTouchStartForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchStartForGBrain(II));
 	    $wnd.onTouchMoveForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchMoveForGBrain(II));
 	    $wnd.onTouchEndForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchEndForGBrain());
-	    $wnd.onScrollForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onScrollForGBrain(II));
+	    $wnd.onGestureEndForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onGestureEndForGBrain());
 	}-*/;
 
 
