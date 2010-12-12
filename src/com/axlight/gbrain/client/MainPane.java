@@ -57,6 +57,7 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -69,18 +70,22 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	private final NodeManager nodeManager;
 	private final AsyncCallback<Void> nullCallback;
 
+	private final SimplePanel borderNorth;
+	private final SimplePanel borderEast;
+	private final SimplePanel borderSouth;
+	private final SimplePanel borderWest;
 	private final FlowPanel buttonPanel;
 	private final DrawingArea drawArea;
 	private final Coordinate coordinate;
 
 	private static final int BUTTON_PANEL_MARGIN = 20;
 	private static final int BUTTON_SIZE = 28;
-	private static final int SCREEN_SCALE = 5;
+	private static final int VIEW_SCREEN_SCALE = 11;
 
-	private int viewX = 0;
-	private int viewY = 0;
-	private int windowClientWidth = 0;
-	private int windowClientHeight = 0;
+	private int viewX = 0; // means viewOffsetX
+	private int viewY = 0; // means viewOffsetY
+	private int viewWidth = 0;
+	private int viewHeight = 0;
 
 	public MainPane() {
 		nodeManager = new NodeManager();
@@ -95,6 +100,30 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				// nothing
 			}
 		};
+		
+		ClickHandler borderClickHandler = new ClickHandler(){
+			public void onClick(ClickEvent event) {
+				int left = getWindowScrollLeft();
+				int top = getWindowScrollTop();
+				int screenWidth = getWindowScreenWidth();
+				int screenHeight = getWindowScreenHeight();
+				int prevCenterPosX = viewX + left + screenWidth / 2;
+				int prevCenterPosY = viewY + top + screenHeight / 2;
+				relocateCenter(prevCenterPosX, prevCenterPosY);
+			}};
+		
+		borderNorth = new SimplePanel();
+		borderNorth.addDomHandler(borderClickHandler, ClickEvent.getType());
+		borderNorth.getElement().getStyle().setBackgroundColor("#555566");
+		borderEast = new SimplePanel();
+		borderEast.addDomHandler(borderClickHandler, ClickEvent.getType());
+		borderEast.getElement().getStyle().setBackgroundColor("#555566");
+		borderSouth = new SimplePanel();
+		borderSouth.addDomHandler(borderClickHandler, ClickEvent.getType());
+		borderSouth.getElement().getStyle().setBackgroundColor("#555566");
+		borderWest = new SimplePanel();
+		borderWest.addDomHandler(borderClickHandler, ClickEvent.getType());
+		borderWest.getElement().getStyle().setBackgroundColor("#555566");
 
 		Image image;
 		if (GBrain.isIPhone) {
@@ -238,6 +267,29 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		downButton.setTitle("Jump to a child");
 
 		if (GBrain.isIPhone) {
+			image = new Image("images/prev_button.svg");
+		} else {
+			image = new Image("images/prev_button.png");
+		}
+		PushButton prevButton = new PushButton(image, new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				if (selectNode == null) {
+					showAlertDialog("Nothing is selected.");
+					return;
+				}
+				NeuronNode n = nodeManager.getPreviousSiblingNode(selectNode
+						.getId());
+				if (n == null) {
+					return;
+				}
+				handleNodeClick(n);
+				slideToPosition(n.getPosX(), n.getPosY());
+			}
+		});
+		prevButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
+		prevButton.setTitle("Jump to previous sibling");
+
+		if (GBrain.isIPhone) {
 			image = new Image("images/next_button.svg");
 		} else {
 			image = new Image("images/next_button.png");
@@ -305,6 +357,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		buttonPanel.add(closeButton);
 		buttonPanel.add(upButton);
 		buttonPanel.add(downButton);
+		buttonPanel.add(prevButton);
 		buttonPanel.add(nextButton);
 		buttonPanel.add(jumpButton);
 		buttonPanel.add(colorButton);
@@ -314,8 +367,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		drawArea.getElement().getStyle().setBackgroundColor("#000000");
 
 		this.add(drawArea, 0, 0);
+		this.add(borderNorth, -100, -100); // initially not visible
+		this.add(borderEast, -100, -100); // initially not visible
+		this.add(borderSouth, -100, -100); // initially not visible
+		this.add(borderWest, -100, -100); // initially not visible
 		this.add(buttonPanel, -100, -100); // initially not visible
-
+		
 		coordinate = new Coordinate(drawArea);
 		drawArea.add(coordinate);
 
@@ -324,51 +381,54 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 		onResize();
 		Element welcome = Document.get().getElementById("gbrain-welcome");
-		welcome.getStyle().setLeft(
-				(windowClientWidth * SCREEN_SCALE + windowClientWidth / 2)
-						- welcome.getClientWidth() / 2, Unit.PX);
-		welcome.getStyle().setTop(
-				(windowClientHeight * SCREEN_SCALE + windowClientHeight / 2)
-						- welcome.getClientHeight() / 2, Unit.PX);
+		welcome.getStyle().setLeft(viewWidth / 2 - welcome.getClientWidth() / 2, Unit.PX);
+		welcome.getStyle().setTop(viewHeight / 2 - welcome.getClientHeight() / 2, Unit.PX);
 		Window.addWindowScrollHandler(this);
 	}
 
 	public void onResize() {
-		int prevCenterPosX = viewX
-				+ (windowClientWidth * SCREEN_SCALE + windowClientWidth / 2);
-		int prevCenterPosY = viewY
-				+ (windowClientHeight * SCREEN_SCALE + windowClientHeight / 2);
-		windowClientWidth = Window.getClientWidth();
-		windowClientHeight = Window.getClientHeight();
+		int prevCenterPosX = viewX + viewWidth / 2; 
+		int prevCenterPosY = viewY + viewHeight / 2;
+		int screenWidth = getWindowScreenWidth();
+		int screenHeight = getWindowScreenHeight();
+		viewWidth = screenWidth * VIEW_SCREEN_SCALE;
+		viewHeight = screenHeight * VIEW_SCREEN_SCALE;
 		RootLayoutPanel.get().getElement().getStyle().setRight(
-				-windowClientWidth * SCREEN_SCALE * 2, Unit.PX);
+				-(viewWidth - screenWidth), Unit.PX);
 		RootLayoutPanel.get().getElement().getStyle().setBottom(
-				-windowClientHeight * SCREEN_SCALE * 2, Unit.PX);
-		buttonPanel.setWidth("" + ((windowClientWidth - BUTTON_PANEL_MARGIN) * 9 / 10) + "px");
-		drawArea.setWidth(windowClientWidth * (SCREEN_SCALE * 2 + 1));
-		drawArea.setHeight(windowClientHeight * (SCREEN_SCALE * 2 + 1));
-
+				-(viewHeight - screenHeight), Unit.PX);
+		buttonPanel.setWidth("" + ((screenWidth - BUTTON_PANEL_MARGIN) * 9 / 10) + "px");
+		drawArea.setWidth(viewWidth);
+		drawArea.setHeight(viewHeight);
+		
+		borderNorth.setPixelSize(viewWidth, BUTTON_PANEL_MARGIN);
+		setWidgetPosition(borderNorth, 0, 0);
+		borderEast.setPixelSize(BUTTON_PANEL_MARGIN, viewHeight - BUTTON_PANEL_MARGIN * 2);
+		setWidgetPosition(borderEast, viewWidth - BUTTON_PANEL_MARGIN, BUTTON_PANEL_MARGIN);
+		borderSouth.setPixelSize(viewWidth, BUTTON_PANEL_MARGIN);
+		setWidgetPosition(borderSouth, 0, viewHeight - BUTTON_PANEL_MARGIN);
+		borderWest.setPixelSize(BUTTON_PANEL_MARGIN, viewHeight - BUTTON_PANEL_MARGIN * 2);
+		setWidgetPosition(borderWest, 0, BUTTON_PANEL_MARGIN);
+		
 		relocateCenter(prevCenterPosX, prevCenterPosY);
 	}
 
 	private void relocateCenter(int posX, int posY) {
 		final Style glassStyle = Document.get().getElementById("gbrain-glass")
 				.getStyle();
-		glassStyle
-				.setWidth(windowClientWidth * (SCREEN_SCALE * 2 + 1), Unit.PX);
-		glassStyle.setHeight(windowClientHeight * (SCREEN_SCALE * 2 + 1),
-				Unit.PX);
+		glassStyle.setWidth(viewWidth, Unit.PX);
+		glassStyle.setHeight(viewHeight, Unit.PX);
 		glassStyle.setVisibility(Visibility.VISIBLE);
-		viewX = posX
-				- (windowClientWidth * SCREEN_SCALE + windowClientWidth / 2);
-		viewY = posY
-				- (windowClientHeight * SCREEN_SCALE + windowClientHeight / 2);
+		viewX = posX - viewWidth / 2;
+		viewY = posY - viewHeight / 2;
 		nodeManager.updateView(viewX, viewY);
 		coordinate.updateView(viewX, viewY);
 		new Timer() {
 			public void run() {
-				int left = windowClientWidth * SCREEN_SCALE;
-				int top = windowClientHeight * SCREEN_SCALE;
+				int screenWidth = getWindowScreenWidth();
+				int screenHeight = getWindowScreenHeight();
+				int left = viewWidth / 2 - screenWidth / 2;
+				int top = viewHeight / 2 - screenHeight / 2;
 				Window.scrollTo(left, top);
 				setWidgetPosition(buttonPanel, left + BUTTON_PANEL_MARGIN, top + BUTTON_PANEL_MARGIN);
 				glassStyle.setVisibility(Visibility.HIDDEN);
@@ -376,12 +436,14 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}.schedule(1000);
 	}
 
-	// XXX doesn't deal with sliding to a position outside of the view.
+	// FIXME doesn't deal with sliding to a position outside of the view.
 	private void slideToPosition(int posX, int posY) {
 		final int lastLeft = getWindowScrollLeft();
 		final int lastTop = getWindowScrollTop();
-		int prevCenterPosX = viewX + lastLeft + windowClientWidth / 2;
-		int prevCenterPosY = viewY + lastTop + windowClientHeight / 2;
+		int screenWidth = getWindowScreenWidth();
+		int screenHeight = getWindowScreenHeight();
+		int prevCenterPosX = viewX + lastLeft + screenWidth / 2;
+		int prevCenterPosY = viewY + lastTop + screenHeight / 2;
 		final int diffX = posX - prevCenterPosX;
 		final int diffY = posY - prevCenterPosY;
 		new Animation() {
@@ -393,36 +455,25 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 			protected void onComplete() {
 				Window.scrollTo(lastLeft + diffX, lastTop + diffY);
-				setWidgetPosition(buttonPanel, lastLeft + diffX - 1 + BUTTON_PANEL_MARGIN, lastTop
-						+ diffY - 1 + BUTTON_PANEL_MARGIN);
+				setWidgetPosition(buttonPanel, lastLeft + diffX + BUTTON_PANEL_MARGIN, lastTop
+						+ diffY + BUTTON_PANEL_MARGIN);
 			}
-		}.run(1500);
-
+		}.run(2000);
 	}
 
 	public void onWindowScroll(ScrollEvent event) {
 		int left = getWindowScrollLeft();
 		int top = getWindowScrollTop();
 		setWidgetPosition(buttonPanel, left + BUTTON_PANEL_MARGIN, top + BUTTON_PANEL_MARGIN);
-		/*
-		if (left <= 0
-				|| top <= 0
-				|| left >= windowClientWidth * SCREEN_SCALE * 2
-				|| top >= windowClientHeight * SCREEN_SCALE * 2
-				|| (left == previousScrollLeft
-						&& left == secondPreviousScrollLeft
-						&& top == previousScrollTop && top == secondPreviousScrollTop)) {
-
-			//int prevCenterPosX = viewX + left + windowClientWidth / 2;
-			//int prevCenterPosY = viewY + top + windowClientHeight / 2;
-			//relocateCenter(prevCenterPosX, prevCenterPosY);
-		}
-		secondPreviousScrollLeft = previousScrollLeft;
-		secondPreviousScrollTop = previousScrollTop;
-		previousScrollLeft = left;
-		previousScrollTop = top;
-		*/
 	}
+
+	private static native int getWindowScreenWidth() /*-{
+    return $wnd.innerWidth || $wnd.clientWidth;
+	}-*/;
+
+	private static native int getWindowScreenHeight() /*-{
+    return $wnd.innerHeight || $wnd.clientHeight;
+	}-*/;
 
 	private static native int getWindowScrollLeft() /*-{
       return $wnd.pageXOffset || $doc.scrollLeft || 0
@@ -985,12 +1036,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (High) redesign windowClient* (maybe windowInner* for iPhone)
-	// TODO (High) iPhone4 scroll event missing?
 	// TODO (High) edge buttons for extra views (relocateCenter)
-	// TODO (Middle) jump to previous sibling button
-	// TODO (Middle) better button images for jumps (except url)
-	// TODO (Middle) button help on welcome page
+	// TODO (High) fix slideToPosition
+	// TODO (High) iPhone4 scroll event missing?
 	// TODO (Low) open all children
 	// TODO (Low) Re-position child nodes
 	// TODO (Low) search text and auto-scroll

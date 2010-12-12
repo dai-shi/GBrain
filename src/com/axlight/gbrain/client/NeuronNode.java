@@ -23,6 +23,7 @@ import java.util.Map;
 import org.vaadin.gwtgraphics.client.DrawingArea;
 import org.vaadin.gwtgraphics.client.Group;
 import org.vaadin.gwtgraphics.client.Line;
+import org.vaadin.gwtgraphics.client.shape.Ellipse;
 import org.vaadin.gwtgraphics.client.shape.Rectangle;
 import org.vaadin.gwtgraphics.client.shape.Text;
 
@@ -42,6 +43,8 @@ public class NeuronNode extends Group {
 	private static final int TEXT_MARGIN_BOTTOM = 5;
 	private static final int TEXT_MARGIN_LEFT = 5;
 	private static final int TEXT_MARGIN_RIGHT = 6;
+	private static final int FOCUS_STROKE_WIDTH = 1;
+	private static final int HIGHLIGHT_STROKE_WIDTH = 3;
 
 	private static final List<String> COLORS = new ArrayList<String>(Arrays.asList("#aa0000","#550088","#007777","#448800"));
 	
@@ -63,8 +66,9 @@ public class NeuronNode extends Group {
 	private final int textHeight;
 	private final Rectangle rect;
 	private Line parentLine = null;
-	private Rectangle highlight = null;
 	private final Map<Long, Line> childLines = new HashMap<Long, Line>();
+	private Rectangle focusRect = null;
+	private Ellipse highlightEllipse = null;
 
 	public NeuronNode(NeuronData nd, int viewX, int viewY) {
 		id = nd.getId();
@@ -173,39 +177,51 @@ public class NeuronNode extends Group {
 	 * call this when clicking this node
 	 */
 	public void setFocus() {
-		text.setFillColor("#000000");
+		if(focusRect != null) {
+			return;
+		}
+		focusRect = new Rectangle(rect.getX() - 1 - FOCUS_STROKE_WIDTH, rect.getY() - 1 - FOCUS_STROKE_WIDTH, textWidth
+				+ TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT + 2 + FOCUS_STROKE_WIDTH * 2, textHeight
+				+ TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM + 2 + FOCUS_STROKE_WIDTH * 2);
+		focusRect.setFillOpacity(0);
+		focusRect.setStrokeColor("#cccccc");
+		focusRect.setStrokeWidth(FOCUS_STROKE_WIDTH);
+		add(focusRect);
 	}
 
 	/**
 	 * the opposite of setFocus
 	 */
 	public void unsetFocus() {
-		text.setFillColor("#ffffff");
+		if (focusRect != null) {
+			remove(focusRect);
+			focusRect = null;
+		}
 	}
 
 	/**
 	 * call this when mouse-overing this node
 	 */
 	public void setHighlight() {
-		highlight = new Rectangle(rect.getX() - 2, rect.getY() - 2, textWidth
-				+ TEXT_MARGIN_LEFT + TEXT_MARGIN_RIGHT + 4, textHeight
-				+ TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM + 4);
-		highlight.setFillOpacity(0);
-		highlight.setStrokeColor("#eeeeee");
-		add(highlight);
+		if(highlightEllipse != null){
+			return;
+		}
+		int width = rect.getWidth();
+		int height = rect.getHeight();
+		highlightEllipse = new Ellipse(rect.getX() + width / 2, rect.getY() + height / 2, width * 5 / 6 + HIGHLIGHT_STROKE_WIDTH * 2, height * 5 / 6 + HIGHLIGHT_STROKE_WIDTH * 2);
+		highlightEllipse.setFillOpacity(0);
+		highlightEllipse.setStrokeColor("#cccccc");
+		highlightEllipse.setStrokeWidth(HIGHLIGHT_STROKE_WIDTH);
+		add(highlightEllipse);
 	}
 
 	/**
 	 * the opposite of setHighlight
 	 */
 	public void unsetHighlight() {
-		removeRect();
-	}
-
-	private void removeRect() {
-		if (highlight != null) {
-			remove(highlight);
-			highlight = null;
+		if (highlightEllipse != null) {
+			remove(highlightEllipse);
+			highlightEllipse = null;
 		}
 	}
 
@@ -218,7 +234,6 @@ public class NeuronNode extends Group {
 	}
 
 	public void setPosition(int posX, int posY) {
-		removeRect();
 		this.posX = posX;
 		this.posY = posY;
 		int x = this.posX - viewX;
@@ -227,6 +242,10 @@ public class NeuronNode extends Group {
 		int y = this.posY - viewY;
 		text.setY(y + textHeight / 2);
 		rect.setY(y - textHeight / 2 - TEXT_MARGIN_TOP);
+		if (focusRect != null) {
+			focusRect.setX(rect.getX() - 1 - FOCUS_STROKE_WIDTH);
+			focusRect.setY(rect.getY() - 1 - FOCUS_STROKE_WIDTH);
+		}
 		for (Line l : childLines.values()) {
 			l.setX1(x);
 			l.setY1(y);

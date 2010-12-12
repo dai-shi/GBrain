@@ -30,7 +30,7 @@
         position: absolute;
         z-index: 1000;
         width: 250px;
-        top: 50px;
+        top: 20px;
         left: 20px;
         border: dashed 5px #999999;
         color: #ffffff;
@@ -39,15 +39,19 @@
         cursor: pointer;
       }
       
-      #gbrain-welcome > h1 {
+      #gbrain-welcome > h3 {
         text-align: center;
+      }
+      
+      #gbrain-welcome > table > tr > td > img {
+        background-color: #eeeeee;
       }
       
       #gbrain-glass {
         position: absolute;
         z-index: 999;
-        width: 100%;
-        height: 100%;
+        width: 500%;
+        height: 500%;
         top: 0px;
         left: 0px;
         background-color: #222222;
@@ -133,13 +137,55 @@
     </noscript>
     
     <div id="gbrain-welcome" onclick="this.style.display='none';">
-<h1>Welcome</h1>
+<h3>GBrain: Associative Memory by Everyone</h3>
 This is an experimental system to make a global brain.<br/>
 Feel free to make any modification.<br/> 
 What you can do:<br/>
 1) Create a new text<br/>
 2) Link with an existing text<br/>
 3) Place texts in good positions<br/>
+<table>
+<tr>
+<td><img src="images/create_button.png"/></td>
+<td>Create a child text.</td>
+</tr>
+<tr>
+<td><img src="images/delete_button.png"/></td>
+<td>Delete the selected text.</td>
+</tr>
+<tr>
+<td><img src="images/open_button.png"/></td>
+<td>Open child texts.</td>
+</tr>
+<tr>
+<td><img src="images/close_button.png"/></td>
+<td>Close child texts.</td>
+</tr>
+<tr>
+<td><img src="images/up_button.png"/></td>
+<td>Locate the parent text.</td>
+</tr>
+<tr>
+<td><img src="images/down_button.png"/></td>
+<td>Locate the first child text.</td>
+</tr>
+<tr>
+<td><img src="images/next_button.png"/></td>
+<td>Locate the next sibling text.</td>
+</tr>
+<tr>
+<td><img src="images/prev_button.png"/></td>
+<td>Locate the previous sibling text.</td>
+</tr>
+<tr>
+<td><img src="images/jump_button.png"/></td>
+<td>Open a URL in the selected text.</td>
+</tr>
+<tr>
+<td><img src="images/color_button.png"/></td>
+<td>Change color of the selected text.</td>
+</tr>
+</table>
     </div>
 
     <div id="gbrain-glass">
