@@ -100,8 +100,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				// nothing
 			}
 		};
-		
-		ClickHandler borderClickHandler = new ClickHandler(){
+
+		ClickHandler borderClickHandler = new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				int left = getWindowScrollLeft();
 				int top = getWindowScrollTop();
@@ -110,20 +110,21 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				int prevCenterPosX = viewX + left + screenWidth / 2;
 				int prevCenterPosY = viewY + top + screenHeight / 2;
 				relocateCenter(prevCenterPosX, prevCenterPosY);
-			}};
-		
+			}
+		};
+
 		borderNorth = new SimplePanel();
 		borderNorth.addDomHandler(borderClickHandler, ClickEvent.getType());
-		borderNorth.getElement().getStyle().setBackgroundColor("#555566");
+		borderNorth.getElement().getStyle().setBackgroundColor("#445566");
 		borderEast = new SimplePanel();
 		borderEast.addDomHandler(borderClickHandler, ClickEvent.getType());
-		borderEast.getElement().getStyle().setBackgroundColor("#555566");
+		borderEast.getElement().getStyle().setBackgroundColor("#445566");
 		borderSouth = new SimplePanel();
 		borderSouth.addDomHandler(borderClickHandler, ClickEvent.getType());
-		borderSouth.getElement().getStyle().setBackgroundColor("#555566");
+		borderSouth.getElement().getStyle().setBackgroundColor("#445566");
 		borderWest = new SimplePanel();
 		borderWest.addDomHandler(borderClickHandler, ClickEvent.getType());
-		borderWest.getElement().getStyle().setBackgroundColor("#555566");
+		borderWest.getElement().getStyle().setBackgroundColor("#445566");
 
 		Image image;
 		if (GBrain.isIPhone) {
@@ -372,7 +373,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		this.add(borderSouth, -100, -100); // initially not visible
 		this.add(borderWest, -100, -100); // initially not visible
 		this.add(buttonPanel, -100, -100); // initially not visible
-		
+
 		coordinate = new Coordinate(drawArea);
 		drawArea.add(coordinate);
 
@@ -381,35 +382,40 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 		onResize();
 		Element welcome = Document.get().getElementById("gbrain-welcome");
-		welcome.getStyle().setLeft(viewWidth / 2 - welcome.getClientWidth() / 2, Unit.PX);
-		welcome.getStyle().setTop(viewHeight / 2 - welcome.getClientHeight() / 2, Unit.PX);
+		welcome.getStyle().setLeft(
+				viewWidth / 2 - welcome.getClientWidth() / 2, Unit.PX);
+		welcome.getStyle().setTop(
+				viewHeight / 2 - welcome.getClientHeight() / 2, Unit.PX);
 		Window.addWindowScrollHandler(this);
 	}
 
 	public void onResize() {
-		int prevCenterPosX = viewX + viewWidth / 2; 
+		int prevCenterPosX = viewX + viewWidth / 2;
 		int prevCenterPosY = viewY + viewHeight / 2;
 		int screenWidth = getWindowScreenWidth();
 		int screenHeight = getWindowScreenHeight();
 		viewWidth = screenWidth * VIEW_SCREEN_SCALE;
 		viewHeight = screenHeight * VIEW_SCREEN_SCALE;
-		RootLayoutPanel.get().getElement().getStyle().setRight(
-				-(viewWidth - screenWidth), Unit.PX);
-		RootLayoutPanel.get().getElement().getStyle().setBottom(
-				-(viewHeight - screenHeight), Unit.PX);
-		buttonPanel.setWidth("" + ((screenWidth - BUTTON_PANEL_MARGIN) * 9 / 10) + "px");
+		Element root = RootLayoutPanel.get().getElement();
+		root.getStyle().setRight(root.getClientWidth() - viewWidth, Unit.PX);
+		root.getStyle().setBottom(root.getClientHeight() - viewHeight, Unit.PX);
+		buttonPanel.setWidth(""
+				+ (screenWidth - BUTTON_PANEL_MARGIN - BUTTON_SIZE) + "px");
 		drawArea.setWidth(viewWidth);
 		drawArea.setHeight(viewHeight);
-		
+
 		borderNorth.setPixelSize(viewWidth, BUTTON_PANEL_MARGIN);
 		setWidgetPosition(borderNorth, 0, 0);
-		borderEast.setPixelSize(BUTTON_PANEL_MARGIN, viewHeight - BUTTON_PANEL_MARGIN * 2);
-		setWidgetPosition(borderEast, viewWidth - BUTTON_PANEL_MARGIN, BUTTON_PANEL_MARGIN);
+		borderEast.setPixelSize(BUTTON_PANEL_MARGIN, viewHeight
+				- BUTTON_PANEL_MARGIN * 2);
+		setWidgetPosition(borderEast, viewWidth - BUTTON_PANEL_MARGIN,
+				BUTTON_PANEL_MARGIN);
 		borderSouth.setPixelSize(viewWidth, BUTTON_PANEL_MARGIN);
 		setWidgetPosition(borderSouth, 0, viewHeight - BUTTON_PANEL_MARGIN);
-		borderWest.setPixelSize(BUTTON_PANEL_MARGIN, viewHeight - BUTTON_PANEL_MARGIN * 2);
+		borderWest.setPixelSize(BUTTON_PANEL_MARGIN, viewHeight
+				- BUTTON_PANEL_MARGIN * 2);
 		setWidgetPosition(borderWest, 0, BUTTON_PANEL_MARGIN);
-		
+
 		relocateCenter(prevCenterPosX, prevCenterPosY);
 	}
 
@@ -430,18 +436,24 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				int left = viewWidth / 2 - screenWidth / 2;
 				int top = viewHeight / 2 - screenHeight / 2;
 				Window.scrollTo(left, top);
-				setWidgetPosition(buttonPanel, left + BUTTON_PANEL_MARGIN, top + BUTTON_PANEL_MARGIN);
+				setWidgetPosition(buttonPanel, left + BUTTON_PANEL_MARGIN, top
+						+ BUTTON_PANEL_MARGIN);
 				glassStyle.setVisibility(Visibility.HIDDEN);
 			}
-		}.schedule(1000);
+		}.schedule(500);
 	}
 
-	// FIXME doesn't deal with sliding to a position outside of the view.
 	private void slideToPosition(int posX, int posY) {
 		final int lastLeft = getWindowScrollLeft();
 		final int lastTop = getWindowScrollTop();
 		int screenWidth = getWindowScreenWidth();
 		int screenHeight = getWindowScreenHeight();
+		if(posX < viewX + screenWidth / 2 || posX > viewX + viewWidth - screenWidth / 2 ||
+				posY < viewY + screenHeight / 2 || posY > viewY + viewHeight - screenHeight / 2){
+			// outside of the view, can't scroll.
+			relocateCenter(posX, posY);
+			return;
+		}
 		int prevCenterPosX = viewX + lastLeft + screenWidth / 2;
 		int prevCenterPosY = viewY + lastTop + screenHeight / 2;
 		final int diffX = posX - prevCenterPosX;
@@ -455,8 +467,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 			protected void onComplete() {
 				Window.scrollTo(lastLeft + diffX, lastTop + diffY);
-				setWidgetPosition(buttonPanel, lastLeft + diffX + BUTTON_PANEL_MARGIN, lastTop
-						+ diffY + BUTTON_PANEL_MARGIN);
+				setWidgetPosition(buttonPanel, lastLeft + diffX
+						+ BUTTON_PANEL_MARGIN, lastTop + diffY
+						+ BUTTON_PANEL_MARGIN);
 			}
 		}.run(2000);
 	}
@@ -464,23 +477,24 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	public void onWindowScroll(ScrollEvent event) {
 		int left = getWindowScrollLeft();
 		int top = getWindowScrollTop();
-		setWidgetPosition(buttonPanel, left + BUTTON_PANEL_MARGIN, top + BUTTON_PANEL_MARGIN);
+		setWidgetPosition(buttonPanel, left + BUTTON_PANEL_MARGIN, top
+				+ BUTTON_PANEL_MARGIN);
 	}
 
 	private static native int getWindowScreenWidth() /*-{
-    return $wnd.innerWidth || $wnd.clientWidth;
+		return $wnd.innerWidth || $doc.body.clientWidth;
 	}-*/;
 
 	private static native int getWindowScreenHeight() /*-{
-    return $wnd.innerHeight || $wnd.clientHeight;
+		return $wnd.innerHeight || $doc.body.clientHeight;
 	}-*/;
 
 	private static native int getWindowScrollLeft() /*-{
-      return $wnd.pageXOffset || $doc.scrollLeft || 0
+		return $wnd.pageXOffset || $doc.body.scrollLeft || 0
 	}-*/;
 
 	private static native int getWindowScrollTop() /*-{
-      return $wnd.pageYOffset || $doc.scrollTop || 0
+		return $wnd.pageYOffset || $doc.body.scrollTop || 0
 	}-*/;
 
 	private void showAlertDialog(String message) {
@@ -786,6 +800,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 			stopDrag();
 			return false;
 		} else {
+			onWindowScroll(null);
 			return true;
 		}
 	}
@@ -794,7 +809,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		onResize();
 		return true;
 	}
-	
+
 	private void handleNodeClick(NeuronNode n) {
 		if (selectNode != n) {
 			if (selectNode != null) {
@@ -1006,7 +1021,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 
 		protected void onStart() {
-			if (line.getParent() != null && dragNode == null && sliding == false) {
+			if (line.getParent() != null && dragNode == null
+					&& sliding == false) {
 				circle.setX(line.getX1());
 				circle.setY(line.getY1());
 				circle.setVisible(true);
@@ -1014,7 +1030,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 
 		protected void onUpdate(double progress) {
-			if (line.getParent() != null && dragNode == null && sliding == false) {
+			if (line.getParent() != null && dragNode == null
+					&& sliding == false) {
 				progress = interpolate(progress);
 				circle.setX((int) (line.getX1() + progress
 						* (line.getX2() - line.getX1())));
@@ -1027,7 +1044,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 		protected void onComplete() {
 			circle.setVisible(false);
-			if(line.getParent() != null) {
+			if (line.getParent() != null) {
 				new LineAnimation(line, circle);
 			} else {
 				drawArea.remove(circle);
@@ -1036,9 +1053,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (High) edge buttons for extra views (relocateCenter)
-	// TODO (High) fix slideToPosition
-	// TODO (High) iPhone4 scroll event missing?
 	// TODO (Low) open all children
 	// TODO (Low) Re-position child nodes
 	// TODO (Low) search text and auto-scroll
