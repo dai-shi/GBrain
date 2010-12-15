@@ -397,8 +397,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		viewWidth = screenWidth * VIEW_SCREEN_SCALE;
 		viewHeight = screenHeight * VIEW_SCREEN_SCALE;
 		Element root = RootLayoutPanel.get().getElement();
-		root.getStyle().setRight(root.getClientWidth() - viewWidth, Unit.PX);
-		root.getStyle().setBottom(root.getClientHeight() - viewHeight, Unit.PX);
+		root.getStyle().setRight(Window.getClientWidth() - viewWidth, Unit.PX);
+		root.getStyle().setBottom(Window.getClientHeight() - viewHeight, Unit.PX);
 		buttonPanel.setWidth(""
 				+ (screenWidth - BUTTON_PANEL_MARGIN - BUTTON_SIZE) + "px");
 		drawArea.setWidth(viewWidth);
