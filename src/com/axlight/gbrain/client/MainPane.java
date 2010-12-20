@@ -80,7 +80,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	private static final int BUTTON_PANEL_MARGIN = 20;
 	private static final int BUTTON_SIZE = 28;
-	private static final int VIEW_SCREEN_SCALE = 11;
+	private static final int VIEW_SCREEN_SCALE = 17;
 
 	private int viewX = 0; // means viewOffsetX
 	private int viewY = 0; // means viewOffsetY
@@ -806,7 +806,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	public boolean onGestureEndForGBrain() {
-		onResize();
+		//onResize();
 		return true;
 	}
 
@@ -1053,15 +1053,16 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
+	// TODO (Middle) Cut parent link = unlink parent button (make it as top)
+	// TODO (Middle) Arrange children position = Re-position child nodes
+	// TODO (Middle) twitter with bitly, place around max radius
+	// TODO (Middle) Search text , create node? How? (search text and auto-scroll)
+
 	// TODO (Low) open all children
-	// TODO (Low) Re-position child nodes
-	// TODO (Low) search text and auto-scroll
 	// TODO (Low) channel to update immediately
 	// TODO (Low) Move to trash rather than delete
 	// TODO (Low) progress indicator
-	// TODO (Low) unlink parent button (make it as top)
 	// TODO (Idea) Land
-	// TODO (Idea) submit from twitter
 	// TODO (Future) separated DragAndDropSupport.java (reusable version)
 	// http://developer.apple.com/library/safari/#documentation/AppleApplications/Reference/SafariWebContent/HandlingEvents/HandlingEvents.html#//apple_ref/doc/uid/TP40006511-SW1
 
