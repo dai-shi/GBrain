@@ -9,7 +9,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimam-scale=0.5, maximum-scale=2.0" />
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimam-scale=0.8, maximum-scale=1.6" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
@@ -106,13 +106,6 @@
               event.preventDefault();
             }
         }, true);
-                
-        targetele.addEventListener("gestureend", function(event){
-            if(window.onGestureEndForGBrain() == false){
-              event.preventDefault();
-            }
-        }, true);
-
       }
       
       gbrainSupportTouch();
@@ -156,6 +149,11 @@ What you can do:<br/>
 <tr>
 <td><img id="gbrain-img" src="images/delete_button.png"/></td>
 <td>Delete the selected text.</td>
+</tr>
+<tr>
+<tr>
+<td><img id="gbrain-img" src="images/noparent_button.png"/></td>
+<td>Remove parent link.</td>
 </tr>
 <tr>
 <td><img id="gbrain-img" src="images/open_button.png"/></td>

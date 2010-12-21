@@ -122,6 +122,28 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 		}
 	}
 
+	public void removeParent(long id) throws IllegalArgumentException {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			Neuron me = pm.getObjectById(Neuron.class, id);
+			if (me == null) {
+				throw new IllegalArgumentException("No such neuron");
+			}
+			Long oldParent = me.getParentId();
+			if (oldParent != null) {
+				Neuron n = pm.getObjectById(Neuron.class, oldParent);
+				if (n == null) {
+					throw new IllegalArgumentException(
+							"No such old parent neuron");
+				}
+				n.setChildren(n.getChildren() - 1);
+			}
+			me.setParentId(null);
+		} finally {
+			pm.close();
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	public void deleteNeuron(long id) throws IllegalArgumentException {
 		PersistenceManager pm = PMF.get().getPersistenceManager();

@@ -23,6 +23,7 @@ public interface GBrainServiceAsync {
 	void updatePosition(long id, int x, int y, AsyncCallback<Void> callback);
 	void updateColor(long id, String color, AsyncCallback<Void> callback);
 	void updateParent(long id, long parent, AsyncCallback<Void> callback);
+	void removeParent(long id, AsyncCallback<Void> callback);
 	void deleteNeuron(long id, AsyncCallback<Void> callback);
 	void getTopNeurons(AsyncCallback<NeuronData[]> callback);
 	void getChildNeurons(long parent, AsyncCallback<NeuronData[]> callback);

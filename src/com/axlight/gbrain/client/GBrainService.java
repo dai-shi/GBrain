@@ -29,6 +29,7 @@ public interface GBrainService extends RemoteService {
 	void updatePosition(long id, int x, int y) throws IllegalArgumentException;
 	void updateColor(long id, String color) throws IllegalArgumentException;
 	void updateParent(long id, long parent) throws IllegalArgumentException;
+	void removeParent(long id) throws IllegalArgumentException;
 	void deleteNeuron(long id) throws IllegalArgumentException;
 	NeuronData[] getTopNeurons() throws IllegalArgumentException;
 	NeuronData[] getChildNeurons(long parent) throws IllegalArgumentException;
