@@ -51,9 +51,9 @@ public class GBrain implements EntryPoint {
 	}
 	            	            
 	public static native void exportStaticMethod() /*-{
-	    $wnd.onTouchStartForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchStartForGBrain(II));
-	    $wnd.onTouchMoveForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchMoveForGBrain(II));
-	    $wnd.onTouchEndForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchEndForGBrain());
+		$wnd.onTouchStartForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchStartForGBrain(II));
+		$wnd.onTouchMoveForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchMoveForGBrain(II));
+		$wnd.onTouchEndForGBrain = $entry(@com.axlight.gbrain.client.GBrain::onTouchEndForGBrain());
 	}-*/;
 
 
@@ -63,6 +63,8 @@ public class GBrain implements EntryPoint {
 	public void onModuleLoad() {
 		String userAgent = Window.Navigator.getUserAgent();
 		if(userAgent.indexOf("iPhone") >= 0){
+			isIPhone = true;
+		}else if(userAgent.indexOf("iPad") >= 0){
 			isIPhone = true;
 		}
 		mainPane = new MainPane();

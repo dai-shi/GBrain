@@ -80,7 +80,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	private static final int BUTTON_PANEL_MARGIN = 20;
 	private static final int BUTTON_SIZE = 28;
-	private static final int VIEW_SCREEN_SCALE = 17;
+	private static final int VIEW_SCREEN_SCALE = 11;
 
 	private int viewX = 0; // means viewOffsetX
 	private int viewY = 0; // means viewOffsetY
@@ -199,9 +199,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 					showAlertDialog("Nothing is selected.");
 					return;
 				}
-				if (selectNode.getParentId() != null){
-					replaceParent(selectNode, null);
-					gbrainService.removeParent(selectNode.getId(), nullCallback);
+				NeuronNode n = selectNode;
+				if (n.getParentId() != null) {
+					replaceParent(n, null);
+					gbrainService.removeParent(n.getId(), nullCallback);
 				}
 			}
 		});
@@ -241,6 +242,20 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		});
 		closeButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		closeButton.setTitle("Close children");
+
+		PushButton arrangeButton = new PushButton("Arrange", new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				if (selectNode == null) {
+					showAlertDialog("Nothing is selected.");
+					return;
+				}
+				NeuronNode n = selectNode;
+				arrangeChildNodes(n);
+				updatePositionNodeAndChildNodes(n);
+			}
+		});
+		arrangeButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
+		arrangeButton.setTitle("Arrange children");
 
 		if (GBrain.isIPhone) {
 			image = new Image("images/up_button.svg");
@@ -361,11 +376,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 					showAlertDialog("Nothing is selected.");
 					return;
 				}
-				final NeuronNode tmpSelectNode = selectNode;
-				tmpSelectNode.setNextColor();
-				final String color = tmpSelectNode.getColor();
-				final long id = tmpSelectNode.getId();
-				gbrainService.updateColor(id, color, nullCallback);
+				NeuronNode n = selectNode;
+				n.setNextColor();
+				gbrainService.updateColor(n.getId(), n.getColor(), nullCallback);
 			}
 		});
 		colorButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
@@ -377,6 +390,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		buttonPanel.add(noparentButton);
 		buttonPanel.add(openButton);
 		buttonPanel.add(closeButton);
+		//buttonPanel.add(arrangeButton);
 		buttonPanel.add(upButton);
 		buttonPanel.add(downButton);
 		buttonPanel.add(prevButton);
@@ -420,7 +434,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		Element root = RootLayoutPanel.get().getElement();
 		root.getStyle().setRight(screenWidth - viewWidth, Unit.PX);
 		root.getStyle().setBottom(screenHeight - viewHeight, Unit.PX);
-		buttonPanel.setWidth(""	+ (screenWidth - BUTTON_SIZE) + "px");
+		buttonPanel.setWidth("" + (screenWidth - BUTTON_SIZE) + "px");
 		drawArea.setWidth(viewWidth);
 		drawArea.setHeight(viewHeight);
 
@@ -456,7 +470,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 				int left = viewWidth / 2 - screenWidth / 2;
 				int top = viewHeight / 2 - screenHeight / 2;
 				Window.scrollTo(left, top);
-				setWidgetPosition(buttonPanel, left, top + screenHeight - buttonPanel.getOffsetHeight());
+				setWidgetPosition(buttonPanel, left, top + screenHeight
+						- buttonPanel.getOffsetHeight());
 				glassStyle.setVisibility(Visibility.HIDDEN);
 			}
 		}.schedule(500);
@@ -467,8 +482,10 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		final int lastTop = getWindowScrollTop();
 		final int screenWidth = getWindowScreenWidth();
 		final int screenHeight = getWindowScreenHeight();
-		if(posX < viewX + screenWidth / 2 || posX > viewX + viewWidth - screenWidth / 2 ||
-				posY < viewY + screenHeight / 2 || posY > viewY + viewHeight - screenHeight / 2){
+		if (posX < viewX + screenWidth / 2
+				|| posX > viewX + viewWidth - screenWidth / 2
+				|| posY < viewY + screenHeight / 2
+				|| posY > viewY + viewHeight - screenHeight / 2) {
 			// outside of the view, can't scroll.
 			relocateCenter(posX, posY);
 			return;
@@ -486,7 +503,8 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 			protected void onComplete() {
 				Window.scrollTo(lastLeft + diffX, lastTop + diffY);
-				setWidgetPosition(buttonPanel, lastLeft + diffX, lastTop + diffY + screenHeight - buttonPanel.getOffsetHeight());
+				setWidgetPosition(buttonPanel, lastLeft + diffX, lastTop
+						+ diffY + screenHeight - buttonPanel.getOffsetHeight());
 			}
 		}.run(2000);
 	}
@@ -495,23 +513,32 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		int screenHeight = getWindowScreenHeight();
 		int left = getWindowScrollLeft();
 		int top = getWindowScrollTop();
-		setWidgetPosition(buttonPanel, left, top + screenHeight - buttonPanel.getOffsetHeight());
+		setWidgetPosition(buttonPanel, left, top + screenHeight
+				- buttonPanel.getOffsetHeight());
 	}
 
-	private static native int getWindowScreenWidth() /*-{
-		if ($doc.documentElement.clientWidth == $wnd.outerWidth) { // like iPhone
-				return $wnd.innerWidth || $doc.documentElement.clientWidth;
+	private static int getWindowScreenWidth() {
+		if (GBrain.isIPhone) {
+			return getWindowInnerWidth();
 		} else {
-			return $doc.documentElement.clientWidth || $wnd.innerWidth;
+			return Window.getClientWidth();
 		}
+	};
+
+	private static int getWindowScreenHeight() {
+		if (GBrain.isIPhone) {
+			return getWindowInnerHeight();
+		} else {
+			return Window.getClientHeight();
+		}
+	};
+
+	private static native int getWindowInnerWidth() /*-{
+		return $wnd.innerWidth;
 	}-*/;
 
-	private static native int getWindowScreenHeight() /*-{
-		if ($doc.documentElement.clientWidth == $wnd.outerWidth) { // like iPhone
-			return $wnd.innerHeight || $doc.documentElement.clientHeight;
-		} else {
-			return $doc.documentElement.clientHeight || $wnd.innerHeight;
-		}
+	private static native int getWindowInnerHeight() /*-{
+		return $wnd.innerHeight;
 	}-*/;
 
 	private static native int getWindowScrollLeft() /*-{
@@ -939,6 +966,13 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		}
 	}
 
+	private void arrangeChildNodes(NeuronNode n) {
+		nodeManager.arrangeChildNodes(n.getId());
+		for (NeuronNode tmp : nodeManager.getChildNodes(n.getId())) {
+			arrangeChildNodes(tmp);
+		}
+	}
+
 	private void savePositionNodeAndChildNodes(NeuronNode n) {
 		n.savePosition();
 		for (NeuronNode tmp : nodeManager.getChildNodes(n.getId())) {
@@ -984,21 +1018,9 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	private void replaceParent(NeuronNode n, Long newParentId) {
-		Long parentId = n.getParentId();
-		if (parentId != null) {
-			NeuronNode parentNode = nodeManager.getNode(parentId);
-			parentNode.decreaseChildren();
-		}
 		removeParentLine(n);
-
-		n.setParentId(newParentId);
-		if (newParentId != null) {
-			NeuronNode newParentNode = nodeManager.getNode(newParentId);
-			if (newParentNode != null) {
-				newParentNode.increaseChildren();
-				addParentLine(n);
-			}
-		}
+		nodeManager.replaceParentNode(n.getId(), newParentId);
+		addParentLine(n);
 	}
 
 	private void checkDragOver(int x, int y) {
@@ -1075,12 +1097,11 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (Middle) Cut parent link = unlink parent button (make it as top)
+	// TODO (Middle) open all children
 	// TODO (Middle) Arrange children position = Re-position child nodes
 	// TODO (Middle) twitter with bitly, place around max radius
-	// TODO (Middle) Search text , create node? How? (search text and auto-scroll)
+	// TODO (Middle) Search: create node? auto-scroll
 
-	// TODO (Low) open all children
 	// TODO (Low) channel to update immediately
 	// TODO (Low) Move to trash rather than delete
 	// TODO (Low) progress indicator
