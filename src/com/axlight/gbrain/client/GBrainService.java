@@ -33,4 +33,5 @@ public interface GBrainService extends RemoteService {
 	void deleteNeuron(long id) throws IllegalArgumentException;
 	NeuronData[] getTopNeurons() throws IllegalArgumentException;
 	NeuronData[] getChildNeurons(long parent) throws IllegalArgumentException;
+	NeuronData[] getAllChildNeurons(long parent) throws IllegalArgumentException;
 }

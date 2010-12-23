@@ -214,4 +214,30 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 		return result.toArray(new NeuronData[0]);
 	}
 
+	@SuppressWarnings("unchecked")
+	private void queryAllChildNeurons(Query query, long parent, List<NeuronData> result) {
+		List<Neuron> list = (List<Neuron>) query.execute(parent);
+		for (Neuron n : list) {
+			result.add(n.toNeuronData());
+		}
+		for (Neuron n : list) {
+			queryAllChildNeurons(query, n.getId(), result);
+		}
+	}
+	
+	public NeuronData[] getAllChildNeurons(long parent)	throws IllegalArgumentException {
+		List<NeuronData> result = new ArrayList<NeuronData>();
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			Query query = pm.newQuery(Neuron.class);
+			query.setOrdering("children desc");
+			query.setFilter("parentId == parent");
+			query.declareParameters("long parent");
+			queryAllChildNeurons(query, parent, result);
+		} finally {
+			pm.close();
+		}
+		return result.toArray(new NeuronData[0]);
+	}
+
 }

@@ -27,4 +27,5 @@ public interface GBrainServiceAsync {
 	void deleteNeuron(long id, AsyncCallback<Void> callback);
 	void getTopNeurons(AsyncCallback<NeuronData[]> callback);
 	void getChildNeurons(long parent, AsyncCallback<NeuronData[]> callback);
+	void getAllChildNeurons(long parent, AsyncCallback<NeuronData[]> callback);
 }

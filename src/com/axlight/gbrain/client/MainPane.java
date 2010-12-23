@@ -722,7 +722,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 	}
 
 	private void refreshChildNeurons(long parent) {
-		gbrainService.getChildNeurons(parent,
+		gbrainService.getAllChildNeurons(parent,
 				new AsyncCallback<NeuronData[]>() {
 					public void onFailure(Throwable caught) {
 						GWT.log("Network error!", caught);
@@ -1097,7 +1097,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (Middle) open all children
 	// TODO (Middle) Arrange children position = Re-position child nodes
 	// TODO (Middle) twitter with bitly, place around max radius
 	// TODO (Middle) Search: create node? auto-scroll
