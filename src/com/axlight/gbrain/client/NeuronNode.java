@@ -45,6 +45,10 @@ public class NeuronNode extends Group {
 	private static final int TEXT_MARGIN_RIGHT = 6;
 	private static final int FOCUS_STROKE_WIDTH = 1;
 	private static final int HIGHLIGHT_STROKE_WIDTH = 3;
+	private static final int OVERLAP_MARGIN_TOP = 15;
+	private static final int OVERLAP_MARGIN_BOTTOM = 15;
+	private static final int OVERLAP_MARGIN_LEFT = 15;
+	private static final int OVERLAP_MARGIN_RIGHT = 15;
 
 	private static final List<String> COLORS = new ArrayList<String>(Arrays.asList("#aa0000","#550088","#007777","#448800"));
 	
@@ -320,6 +324,27 @@ public class NeuronNode extends Group {
 				&& targetX <= x + textWidth / 2 + TEXT_MARGIN_RIGHT
 				&& y - textHeight / 2 - TEXT_MARGIN_TOP <= targetY
 				&& targetY <= y + textHeight / 2 + TEXT_MARGIN_BOTTOM;
+	}
+	
+	/**
+	 * check if the node with new position is covered by this node
+	 * 
+	 * @param target the target node
+	 * @param newPosX the new posX of the node
+	 * @param newPosY the new posY of the node
+	 * @return
+	 */
+	public boolean isNewPositionOverlap(NeuronNode target, int newPosX, int newPosY) {
+		int x1 = this.posX - this.textWidth / 2 - TEXT_MARGIN_LEFT;
+		int x2 = this.posX + this.textWidth / 2 + TEXT_MARGIN_RIGHT;
+		int y1 = this.posY - this.textHeight / 2 - TEXT_MARGIN_TOP;
+		int y2 = this.posY + this.textHeight / 2 + TEXT_MARGIN_BOTTOM;
+		int tx1 = newPosX - target.textWidth / 2 - TEXT_MARGIN_LEFT - OVERLAP_MARGIN_LEFT;
+		int tx2 = newPosX + target.textWidth / 2 + TEXT_MARGIN_RIGHT + OVERLAP_MARGIN_RIGHT;
+		int ty1 = newPosY - target.textHeight / 2 - TEXT_MARGIN_TOP - OVERLAP_MARGIN_TOP;
+		int ty2 = newPosY + target.textHeight / 2 + TEXT_MARGIN_BOTTOM +OVERLAP_MARGIN_BOTTOM;
+		return (tx1 <= x2 && x1 <= tx2) &&
+		       (ty1 <= y2 && y1 <= ty2);
 	}
 
 	public Line getParentLine() {

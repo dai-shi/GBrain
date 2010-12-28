@@ -243,14 +243,19 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		closeButton.setPixelSize(BUTTON_SIZE, BUTTON_SIZE);
 		closeButton.setTitle("Close children");
 
-		PushButton arrangeButton = new PushButton("Arrange", new ClickHandler() {
+		if (GBrain.isIPhone) {
+			image = new Image("images/arrange_button.svg");
+		} else {
+			image = new Image("images/arrange_button.png");
+		}
+		PushButton arrangeButton = new PushButton(image, new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (selectNode == null) {
 					showAlertDialog("Nothing is selected.");
 					return;
 				}
 				NeuronNode n = selectNode;
-				arrangeChildNodes(n);
+				nodeManager.arrangeAllChildNodes(n);
 				updatePositionNodeAndChildNodes(n);
 			}
 		});
@@ -390,7 +395,7 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		buttonPanel.add(noparentButton);
 		buttonPanel.add(openButton);
 		buttonPanel.add(closeButton);
-		//buttonPanel.add(arrangeButton);
+		buttonPanel.add(arrangeButton);
 		buttonPanel.add(upButton);
 		buttonPanel.add(downButton);
 		buttonPanel.add(prevButton);
@@ -694,14 +699,12 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		};
 
 		if (parentNode == null) {
-			int screenWidth = getWindowScreenWidth();
-			int screenHeight = getWindowScreenHeight();
-			int x = viewX + screenWidth / 2;
-			int y = viewY + screenHeight / 2;
+			int x = viewX + viewWidth / 2;
+			int y = viewY + viewHeight / 2;
 			gbrainService.addNeuron(content, x, y, cb);
 		} else {
 			int x = parentNode.getPosX() + 80;
-			int y = parentNode.getPosY() + 40 + 40 * parentNode.getChildren();
+			int y = parentNode.getPosY() + 80;
 			gbrainService.addNeuron(parentNode.getId(), content, x, y, cb);
 		}
 	}
@@ -963,13 +966,6 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 		for (NeuronNode tmp : nodeManager.getChildNodes(n.getId())) {
 			removeChildNodes(tmp);
 			removeNode(tmp);
-		}
-	}
-
-	private void arrangeChildNodes(NeuronNode n) {
-		nodeManager.arrangeChildNodes(n.getId());
-		for (NeuronNode tmp : nodeManager.getChildNodes(n.getId())) {
-			arrangeChildNodes(tmp);
 		}
 	}
 
