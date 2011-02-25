@@ -1,0 +1,2 @@
+serviceClass: com.axlight.gbrain.client.GBrainService
+path: F3E1DD9517BF573BC4954BF92579E4CD.gwt.rpc
