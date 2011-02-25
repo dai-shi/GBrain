@@ -7,7 +7,7 @@
 <%
     GBrainServiceImpl impl = GBrainServiceImpl.getInstance();
     if (impl != null) {
-    	impl.fetchBitLyNeuron();
+    	impl.fetchNeuron();
 %>
 OK
 <%

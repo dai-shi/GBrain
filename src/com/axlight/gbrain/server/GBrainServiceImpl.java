@@ -16,6 +16,7 @@ package com.axlight.gbrain.server;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,15 +41,16 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 		GBrainService {
 
 	private static GBrainServiceImpl instance = null;
-	public static GBrainServiceImpl getInstance(){
+
+	public static GBrainServiceImpl getInstance() {
 		return instance;
 	}
-	
-	public GBrainServiceImpl(){
+
+	public GBrainServiceImpl() {
 		super();
 		instance = this;
 	}
-	
+
 	public void addNeuron(String content, int x, int y)
 			throws IllegalArgumentException {
 		if (!FieldVerifier.isValidContent(content)) {
@@ -260,65 +262,63 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@SuppressWarnings("unchecked")
-	private boolean alreadyExists(String content){
+	private boolean alreadyExists(String content) {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
 			Query query = pm.newQuery(Neuron.class);
 			query.setFilter("content == c");
 			query.declareParameters("String c");
 			List<Neuron> list = (List<Neuron>) query.execute(content);
-			if(list.isEmpty()){
+			if (list.isEmpty()) {
 				return false;
-			}else{
+			} else {
 				return true;
 			}
 		} finally {
 			pm.close();
 		}
 	}
-	
-	private static final double PARAM_EXPAND = 20.0;
 
-	@SuppressWarnings("unchecked")
-	private void expandAllNeuronPositions(int count) {
-		PersistenceManager pm = PMF.get().getPersistenceManager();
-		try {
-			Query query = pm.newQuery(Neuron.class);
-			List<Neuron> list = (List<Neuron>) query.execute();
-			for (Neuron n : list) {
-				int x = n.getX();
-				int y = n.getY();
-				double deg = Math.atan((double)x / (double) y);
-				n.setX(x + (int) (PARAM_EXPAND * count * Math.sin(deg)));
-				n.setY(y + (int) (PARAM_EXPAND * count * Math.cos(deg)));
-			}
-		} finally {
-			pm.close();
-		}	
-	}
-	
 	private static final double PARAM_NEW_X = 50.0;
 	private static final double PARAM_NEW_Y = 300.0;
-	public void fetchBitLyNeuron() throws IOException {
+
+	public void fetchNeuron() throws IOException {
 		URLFetchService ufs = URLFetchServiceFactory.getURLFetchService();
-		HTTPResponse res = ufs
-				.fetch(new URL(
-						"http://search.twitter.com/search.json?q=bit.ly/&result_type=recent"));
 		JsonParser parser = new JsonParser();
-		JsonElement top = parser.parse(new String(res.getContent(), "UTF-8"));
-		for(JsonElement ele : top.getAsJsonObject().get("results").getAsJsonArray()){
-			String content = ele.getAsJsonObject().get("text").getAsString();
-			if(alreadyExists(content)){
-				continue;
-			}
-			try{
-				double deg = Math.random() * Math.PI * 2;
-				int x = (int)(Math.random() * PARAM_NEW_X * Math.sin(deg));
-				int y = (int)(Math.random() * PARAM_NEW_Y * Math.cos(deg));
-				addNeuron(content, x, y);
-				expandAllNeuronPositions(1);
-			}catch(IllegalArgumentException e){
-				//ignored
+
+		NeuronData[] targets = getTopNeurons();
+		for (NeuronData n : targets) {
+			String q = URLEncoder.encode(n.getContent(), "UTF-8");
+			long parent = n.getId();
+			int x = n.getX();
+			int y = n.getY();
+			int children = n.getChildren();
+
+			HTTPResponse res = ufs.fetch(new URL(
+					"http://search.twitter.com/search.json?q=" + q
+							+ "&result_type=recent"));
+			JsonElement top = parser
+					.parse(new String(res.getContent(), "UTF-8"));
+			for (JsonElement ele : top.getAsJsonObject().get("results")
+					.getAsJsonArray()) {
+				String content = ele.getAsJsonObject().get("text")
+						.getAsString();
+				if (alreadyExists(content)) {
+					continue;
+				}
+				try {
+					double deg = Math.random() * Math.PI * 2;
+					int xx = x
+							+ (int) ((children + 1) * Math.random()
+									* PARAM_NEW_X * Math.cos(deg));
+					int yy = y
+							+ (int) ((children + 1) * Math.random()
+									* PARAM_NEW_Y * Math.sin(deg));
+					addNeuron(parent, content, xx, yy);
+					children++;
+				} catch (IllegalArgumentException e) {
+					// ignored
+				}
 			}
 		}
 	}
