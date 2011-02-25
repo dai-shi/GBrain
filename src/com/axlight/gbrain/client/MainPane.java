@@ -1093,15 +1093,15 @@ public class MainPane extends AbsolutePanel implements ProvidesResize,
 
 	}
 
-	// TODO (Middle) Arrange children position = Re-position child nodes
 	// TODO (Middle) twitter with bitly, place around max radius
+	// TODO (Middle) Arrange children position: check line overlap AMAP
 	// TODO (Middle) Search: create node? auto-scroll
 
 	// TODO (Low) channel to update immediately
 	// TODO (Low) Move to trash rather than delete
 	// TODO (Low) progress indicator
+	// TODO (Idea) Personalization & following
 	// TODO (Idea) Land
-	// TODO (Future) separated DragAndDropSupport.java (reusable version)
 	// http://developer.apple.com/library/safari/#documentation/AppleApplications/Reference/SafariWebContent/HandlingEvents/HandlingEvents.html#//apple_ref/doc/uid/TP40006511-SW1
 
 }

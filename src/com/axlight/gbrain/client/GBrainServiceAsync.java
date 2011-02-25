@@ -28,4 +28,5 @@ public interface GBrainServiceAsync {
 	void getTopNeurons(AsyncCallback<NeuronData[]> callback);
 	void getChildNeurons(long parent, AsyncCallback<NeuronData[]> callback);
 	void getAllChildNeurons(long parent, AsyncCallback<NeuronData[]> callback);
+	void fetchBitLyNeuron(AsyncCallback<Void> callback);
 }

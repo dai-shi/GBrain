@@ -15,6 +15,8 @@
 package com.axlight.gbrain.client;
 
 
+import java.io.IOException;
+
 import com.axlight.gbrain.shared.NeuronData;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -34,4 +36,5 @@ public interface GBrainService extends RemoteService {
 	NeuronData[] getTopNeurons() throws IllegalArgumentException;
 	NeuronData[] getChildNeurons(long parent) throws IllegalArgumentException;
 	NeuronData[] getAllChildNeurons(long parent) throws IllegalArgumentException;
+	void fetchBitLyNeuron() throws IOException;
 }

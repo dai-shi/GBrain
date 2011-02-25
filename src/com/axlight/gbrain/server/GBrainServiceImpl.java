@@ -14,6 +14,8 @@
  */
 package com.axlight.gbrain.server;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +25,11 @@ import javax.jdo.Query;
 import com.axlight.gbrain.client.GBrainService;
 import com.axlight.gbrain.shared.FieldVerifier;
 import com.axlight.gbrain.shared.NeuronData;
+import com.google.appengine.api.urlfetch.HTTPResponse;
+import com.google.appengine.api.urlfetch.URLFetchService;
+import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
@@ -32,6 +39,16 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class GBrainServiceImpl extends RemoteServiceServlet implements
 		GBrainService {
 
+	private static GBrainServiceImpl instance = null;
+	public static GBrainServiceImpl getInstance(){
+		return instance;
+	}
+	
+	public GBrainServiceImpl(){
+		super();
+		instance = this;
+	}
+	
 	public void addNeuron(String content, int x, int y)
 			throws IllegalArgumentException {
 		if (!FieldVerifier.isValidContent(content)) {
@@ -215,7 +232,8 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@SuppressWarnings("unchecked")
-	private void queryAllChildNeurons(Query query, long parent, List<NeuronData> result) {
+	private void queryAllChildNeurons(Query query, long parent,
+			List<NeuronData> result) {
 		List<Neuron> list = (List<Neuron>) query.execute(parent);
 		for (Neuron n : list) {
 			result.add(n.toNeuronData());
@@ -224,8 +242,9 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 			queryAllChildNeurons(query, n.getId(), result);
 		}
 	}
-	
-	public NeuronData[] getAllChildNeurons(long parent)	throws IllegalArgumentException {
+
+	public NeuronData[] getAllChildNeurons(long parent)
+			throws IllegalArgumentException {
 		List<NeuronData> result = new ArrayList<NeuronData>();
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
@@ -238,6 +257,70 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 			pm.close();
 		}
 		return result.toArray(new NeuronData[0]);
+	}
+
+	@SuppressWarnings("unchecked")
+	private boolean alreadyExists(String content){
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			Query query = pm.newQuery(Neuron.class);
+			query.setFilter("content == c");
+			query.declareParameters("String c");
+			List<Neuron> list = (List<Neuron>) query.execute(content);
+			if(list.isEmpty()){
+				return false;
+			}else{
+				return true;
+			}
+		} finally {
+			pm.close();
+		}
+	}
+	
+	private static final double PARAM_EXPAND = 20.0;
+
+	@SuppressWarnings("unchecked")
+	private void expandAllNeuronPositions(int count) {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			Query query = pm.newQuery(Neuron.class);
+			List<Neuron> list = (List<Neuron>) query.execute();
+			for (Neuron n : list) {
+				int x = n.getX();
+				int y = n.getY();
+				double deg = Math.atan((double)x / (double) y);
+				n.setX(x + (int) (PARAM_EXPAND * count * Math.sin(deg)));
+				n.setY(y + (int) (PARAM_EXPAND * count * Math.cos(deg)));
+			}
+		} finally {
+			pm.close();
+		}	
+	}
+	
+	private static final double PARAM_NEW_X = 50.0;
+	private static final double PARAM_NEW_Y = 300.0;
+	public void fetchBitLyNeuron() throws IOException {
+		URLFetchService ufs = URLFetchServiceFactory.getURLFetchService();
+		HTTPResponse res = ufs
+				.fetch(new URL(
+						"http://search.twitter.com/search.json?q=bit.ly/&result_type=recent"));
+		JsonParser parser = new JsonParser();
+		JsonElement top = parser.parse(new String(res.getContent(), "UTF-8"));
+		for(JsonElement ele : top.getAsJsonObject().get("results").getAsJsonArray()){
+			String content = ele.getAsJsonObject().get("text").getAsString();
+			if(alreadyExists(content)){
+				continue;
+			}
+			try{
+				double deg = Math.random() * Math.PI * 2;
+				int x = (int)(Math.random() * PARAM_NEW_X * Math.sin(deg));
+				int y = (int)(Math.random() * PARAM_NEW_Y * Math.cos(deg));
+				addNeuron(content, x, y);
+				expandAllNeuronPositions(1);
+			}catch(IllegalArgumentException e){
+				//ignored
+			}
+		}
 	}
 
 }
