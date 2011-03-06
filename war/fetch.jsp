@@ -5,7 +5,7 @@
   <body>
 
 <%
-    GBrainServiceImpl impl = GBrainServiceImpl.getInstance();
+    GBrainServiceImpl impl = new GBrainServiceImpl();
     if (impl != null) {
     	impl.fetchNeuron();
 %>

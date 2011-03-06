@@ -279,8 +279,8 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 		}
 	}
 
-	private static final double PARAM_NEW_X = 50.0;
-	private static final double PARAM_NEW_Y = 300.0;
+	private static final double PARAM_NEW_X = 800.0;
+	private static final double PARAM_NEW_Y = 500.0;
 
 	public void fetchNeuron() throws IOException {
 		URLFetchService ufs = URLFetchServiceFactory.getURLFetchService();
@@ -303,17 +303,20 @@ public class GBrainServiceImpl extends RemoteServiceServlet implements
 					.getAsJsonArray()) {
 				String content = ele.getAsJsonObject().get("text")
 						.getAsString();
+				if (content.indexOf("http://")==-1){
+					continue;
+				}
 				if (alreadyExists(content)) {
 					continue;
 				}
 				try {
 					double deg = Math.random() * Math.PI * 2;
 					int xx = x
-							+ (int) ((children + 1) * Math.random()
-									* PARAM_NEW_X * Math.cos(deg));
+							+ (int) (Math.random() * PARAM_NEW_X * Math
+									.cos(deg));
 					int yy = y
-							+ (int) ((children + 1) * Math.random()
-									* PARAM_NEW_Y * Math.sin(deg));
+							+ (int) (Math.random() * PARAM_NEW_Y * Math
+									.sin(deg));
 					addNeuron(parent, content, xx, yy);
 					children++;
 				} catch (IllegalArgumentException e) {

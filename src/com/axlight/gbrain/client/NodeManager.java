@@ -177,14 +177,14 @@ public class NodeManager {
 	private static final int MAX_RADIUS = 1000;
 	private static final int RADIUS_STEP = 10;
 	private static final double RADIUS_SCALE = 2.5; // from y-axis to x-axis
-	private static final int INITIAL_DEGREE = 30;
+	private static final int INITIAL_DEGREE = 10;
 	private static final int DEGREE_STEP = 13;
 
 	public void placeNodeInOpenArea(NeuronNode parent, NeuronNode child, List<NeuronNode> arranged){
 		int posX = parent.getPosX();
 		int posY = parent.getPosY();
 		for (int r = INITIAL_RADIUS; r <= MAX_RADIUS ; r += RADIUS_STEP) {
-			for (double d = INITIAL_DEGREE; d < 360 + INITIAL_DEGREE; d += DEGREE_STEP) {
+			for (double d = INITIAL_DEGREE + r; d < 360 + INITIAL_DEGREE + r; d += DEGREE_STEP) {
 				int x = posX + (int) (r * RADIUS_SCALE * Math.sin(Math.PI * d / 180.0));
 				int y = posY + (int) (r * Math.cos(Math.PI * d / 180.0));
 				boolean overlap = false;
